@@ -1,10 +1,11 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 
 import employeesRoutes from "./src/routes/employees.js";
 import skillsRoutes from "./src/routes/skills.js";
-
+import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/users.js";
+import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
@@ -22,11 +23,13 @@ app.get("/", (req, res) => {
 // Mount routes
 app.use("/employees", employeesRoutes);
 app.use("/skills", skillsRoutes);
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 
 // Health check
-app.get("/health", (req, res) => {
-  res.json({ status: "OK", timestamp: new Date().toISOString() });
-});
+// app.get("/health", (req, res) => {
+//   res.json({ status: "OK", timestamp: new Date().toISOString() });
+// });
 
 // Start server
 app.listen(PORT, () => {
