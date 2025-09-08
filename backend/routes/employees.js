@@ -6,13 +6,15 @@ import {
   updateEmployee,
   deleteEmployee,
 } from "../controllers/employeeController.js";
+import { verifyToken } from "../middlewares/authMiddlewares.js";
 
 const router = express.Router();
 
-router.post("/", createEmployee);
-router.get("/", getAllEmployees);
-router.get("/:id", getEmployeeById);
-router.put("/:id", updateEmployee);
-router.delete("/:id", deleteEmployee);
+// All employee routes require authentication
+router.post("/", verifyToken, createEmployee);
+router.get("/", verifyToken, getAllEmployees);
+router.get("/:id", verifyToken, getEmployeeById);
+router.put("/:id", verifyToken, updateEmployee);
+router.delete("/:id", verifyToken, deleteEmployee); // Admin check handled in controller
 
 export default router;

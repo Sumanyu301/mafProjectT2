@@ -3,9 +3,23 @@ import prisma from "../prismaClient.js";
 // Create Employee
 export const createEmployee = async (req, res) => {
   try {
-    const { userId, name, contact } = req.body;
+    const { name, contact } = req.body;
+    const userId = req.user.id; // Get from authenticated user, not body
+
+    // Check if employee profile already exists for this user
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { userId: userId },
+    });
+
+    if (existingEmployee) {
+      return res
+        .status(400)
+        .json({ error: "Employee profile already exists for this user" });
+    }
+
     const employee = await prisma.employee.create({
       data: { userId, name, contact },
+      include: { user: true },
     });
     res.json(employee);
   } catch (error) {
@@ -16,21 +30,22 @@ export const createEmployee = async (req, res) => {
 // Get All Employees
 export const getAllEmployees = async (req, res) => {
   try {
-    const { availability, manager, skill } = req.query;
+    const { skill } = req.query;
 
     const employees = await prisma.employee.findMany({
       where: {
-        ...(availability && { availability: availability === "true" }),
-        ...(manager && {
-          managerName: { contains: manager, mode: "insensitive" },
-        }),
         ...(skill && {
           skills: {
             some: { skill: { name: { contains: skill, mode: "insensitive" } } },
           },
         }),
       },
-      include: { user: true, skills: { include: { skill: true } } },
+      include: {
+        user: {
+          select: { id: true, username: true, email: true, systemRole: true }, // Don't expose password
+        },
+        skills: { include: { skill: true } },
+      },
     });
 
     res.json(employees);
@@ -45,7 +60,14 @@ export const getEmployeeById = async (req, res) => {
     const { id } = req.params;
     const employee = await prisma.employee.findUnique({
       where: { id: Number(id) },
-      include: { user: true, skills: { include: { skill: true } } },
+      include: {
+        user: {
+          select: { id: true, username: true, email: true, systemRole: true },
+        },
+        skills: { include: { skill: true } },
+        assignedTasks: { include: { project: true } },
+        projectMembers: { include: { project: true } },
+      },
     });
     if (!employee) return res.status(404).json({ error: "Employee not found" });
     res.json(employee);
@@ -58,13 +80,35 @@ export const getEmployeeById = async (req, res) => {
 export const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, contact, availability, managerName } = req.body;
+    const { name, contact } = req.body;
 
-    const employee = await prisma.employee.update({
+    // Check if user owns this employee record or is admin
+    const employee = await prisma.employee.findUnique({
       where: { id: Number(id) },
-      data: { name, contact, availability, managerName },
+      include: { user: true },
     });
-    res.json(employee);
+
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+
+    // Only allow users to update their own profile, or admins to update any profile
+    if (employee.userId !== req.user.id && req.user.systemRole !== "ADMIN") {
+      return res
+        .status(403)
+        .json({ error: "Not authorized to update this employee profile" });
+    }
+
+    const updatedEmployee = await prisma.employee.update({
+      where: { id: Number(id) },
+      data: { name, contact },
+      include: {
+        user: {
+          select: { id: true, username: true, email: true, systemRole: true },
+        },
+      },
+    });
+    res.json(updatedEmployee);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
