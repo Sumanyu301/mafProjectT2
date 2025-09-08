@@ -31,12 +31,12 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 relative overflow-hidden">
-      {/* Background decoration */}
+    <div className="min-h-screen bg-white relative overflow-hidden">
+      {/* Minimal background decoration */}
       <div className="absolute inset-0">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-1000"></div>
-        <div className="absolute -bottom-20 left-1/2 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse delay-500"></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-blue-50 rounded-full opacity-60"></div>
+        <div className="absolute bottom-20 right-20 w-24 h-24 bg-red-50 rounded-full opacity-60"></div>
+        <div className="absolute top-1/2 right-1/3 w-16 h-16 bg-blue-100 rounded-full opacity-40"></div>
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
@@ -47,23 +47,23 @@ function Login() {
           buttonText={isLoading ? "Signing In..." : "Sign In"}
           isLoading={isLoading}
         />
-        {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
+        {error && <p className="text-red-600 text-sm mt-2 font-medium">{error}</p>}
 
         {/* Enhanced bottom section */}
         <div className="mt-8 text-center">
-          <div className="backdrop-blur-sm bg-white/5 border border-white/10 rounded-2xl p-6 max-w-md">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md shadow-sm">
             <div className="flex items-center justify-center mb-3">
-              <Sparkles className="h-5 w-5 text-yellow-400 mr-2 animate-pulse" />
-              <span className="text-gray-300">New to our platform?</span>
+              <Sparkles className="h-5 w-5 text-red-600 mr-2" />
+              <span className="text-blue-900 font-semibold">New to our platform?</span>
             </div>
 
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-gray-700 text-sm mb-4">
               Join thousands of users and discover amazing features waiting for you.
             </p>
 
             <Link 
               to="/signup" 
-              className="inline-flex items-center justify-center w-full bg-white/10 hover:bg-white/20 text-white py-3 px-6 rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] border border-white/20 hover:border-white/30 group"
+              className="inline-flex items-center justify-center w-full bg-blue-900 hover:bg-blue-800 text-white py-3 px-6 rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] shadow-sm hover:shadow-md group"
             >
               <span>Create Account</span>
               <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -72,15 +72,15 @@ function Login() {
 
           {/* Footer links */}
           <div className="flex items-center justify-center space-x-6 mt-6 text-sm">
-            <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors">
+            <Link to="/privacy" className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
               Privacy Policy
             </Link>
-            <span className="text-gray-600">•</span>
-            <Link to="/terms" className="text-gray-400 hover:text-white transition-colors">
+            <span className="text-gray-400">•</span>
+            <Link to="/terms" className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
               Terms of Service
             </Link>
-            <span className="text-gray-600">•</span>
-            <Link to="/help" className="text-gray-400 hover:text-white transition-colors">
+            <span className="text-gray-400">•</span>
+            <Link to="/help" className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
               Help
             </Link>
           </div>
