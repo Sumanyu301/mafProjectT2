@@ -7,7 +7,7 @@ export async function createMilestone(req, res) {
     const { title, description, dueDate } = req.body;
 
     // Check if user is admin
-    if (req.user.role !== "ADMIN") {
+    if (req.user.systemRole !== "ADMIN") {
       return res.status(403).json({ error: "Admin access required" });
     }
 
@@ -95,7 +95,7 @@ export async function updateMilestone(req, res) {
     const { title, description, dueDate, completed } = req.body;
 
     // Check if user is admin
-    if (req.user.role !== "ADMIN") {
+    if (req.user.systemRole !== "ADMIN") {
       return res.status(403).json({ error: "Admin access required" });
     }
 
@@ -146,7 +146,7 @@ export async function deleteMilestone(req, res) {
     const { milestoneId } = req.params;
 
     // Check if user is admin
-    if (req.user.role !== "ADMIN") {
+    if (req.user.systemRole !== "ADMIN") {
       return res.status(403).json({ error: "Admin access required" });
     }
 

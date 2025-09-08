@@ -8,7 +8,7 @@ export async function createTask(req, res) {
       req.body;
 
     // Check if user is admin
-    if (req.user.role !== "ADMIN") {
+    if (req.user.systemRole !== "ADMIN") {
       return res.status(403).json({ error: "Admin access required" });
     }
 
@@ -48,18 +48,17 @@ export async function createTask(req, res) {
       data: {
         title,
         description,
-        priority,
         startDate: parsedStartDate,
         endDate: parsedEndDate,
         projectId: parseInt(id),
-        assignedTo: assignedTo ? parseInt(assignedTo) : null,
+        employeeId: assignedTo ? parseInt(assignedTo) : null,
         status: "TODO",
       },
       include: {
         project: {
           select: { id: true, title: true },
         },
-        assignee: {
+        assignedTo: {
           select: { id: true, name: true, contact: true },
         },
       },

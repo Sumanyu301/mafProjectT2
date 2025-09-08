@@ -45,7 +45,8 @@ export async function loginUser(req, res) {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) return res.status(401).json({ message: "Invalid credentials" });
+    if (!isPasswordValid)
+      return res.status(401).json({ message: "Invalid credentials" });
 
     // Update last login
     await prisma.user.update({
@@ -54,7 +55,7 @@ export async function loginUser(req, res) {
     });
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.systemRole },
+      { id: user.id, email: user.email, systemRole: user.systemRole },
       JWT_SECRET,
       { expiresIn: "1h" }
     );
@@ -62,9 +63,9 @@ export async function loginUser(req, res) {
     // Send token in HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,     // use true in production (HTTPS)
+      secure: true, // use true in production (HTTPS)
       sameSite: "None", // allow cross-site cookies (Vercel + Render setup)
-      maxAge: 3600000,  // 1 hour
+      maxAge: 3600000, // 1 hour
     });
 
     res.status(200).json({ message: "Login successful" });

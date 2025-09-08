@@ -3,3 +3,16 @@ node_modules
 .env
 
 /generated/prisma
+
+# Temporary files
+*.txt
+update_admin.js
+test_*.js
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
