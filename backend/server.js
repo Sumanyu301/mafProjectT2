@@ -5,6 +5,7 @@ import employeesRoutes from "./src/routes/employees.js";
 import skillsRoutes from "./src/routes/skills.js";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
+import projectRoutes from "./routes/projects.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use("/employees", employeesRoutes);
 app.use("/skills", skillsRoutes);
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
+app.use("/projects", projectRoutes);
 
 // Health check
 // app.get("/health", (req, res) => {

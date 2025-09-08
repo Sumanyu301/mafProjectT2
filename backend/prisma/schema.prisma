@@ -11,17 +11,17 @@ datasource db {
 }
 
 model User {
-  id           Int        @id @default(autoincrement())
-  username     String     @unique
-  email        String     @unique
-  passwordHash String     @map("password_hash")
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String    @map("password_hash")
   systemRole   SystemRole @default(EMPLOYEE) @map("system_role")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  lastLogin    DateTime?  @map("last_login")
-
+  createdAt    DateTime  @default(now()) @map("created_at")
+  lastLogin    DateTime? @map("last_login")
+  
   // Relations
   employee Employee?
-
+  
   @@map("users")
 }
 
@@ -30,37 +30,37 @@ model Employee {
   userId  Int    @unique @map("user_id")
   name    String
   contact String
-
+  
   // Relations
-  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   skills          EmployeeSkill[]
-  createdProjects Project[]         @relation("ProjectCreator")
+  createdProjects Project[]          @relation("ProjectCreator")
   projectMembers  ProjectEmployee[]
   assignedTasks   Task[]
-
+  
   @@map("employees")
 }
 
 model Skill {
   id   Int    @id @default(autoincrement())
   name String @unique
-
+  
   // Relations
   employeeSkills EmployeeSkill[]
-
+  
   @@map("skills")
 }
 
 model EmployeeSkill {
-  employeeId      Int              @map("employee_id")
-  skillId         Int              @map("skill_id")
-  proficiency     ProficiencyLevel
-  yearsExperience Int              @map("years_experience")
-
+  employeeId       Int    @map("employee_id")
+  skillId          Int    @map("skill_id")
+  proficiency      ProficiencyLevel
+  yearsExperience  Int    @map("years_experience")
+  
   // Relations
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   skill    Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
-
+  
   @@id([employeeId, skillId])
   @@map("employee_skills")
 }
@@ -76,25 +76,25 @@ model Project {
   status      ProjectStatus @default(PLANNING)
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
-
+  
   // Relations
-  creator    Employee          @relation("ProjectCreator", fields: [createdBy], references: [id])
-  members    ProjectEmployee[]
-  tasks      Task[]
-  milestones Milestone[]
-
+  creator     Employee           @relation("ProjectCreator", fields: [createdBy], references: [id])
+  members     ProjectEmployee[]
+  tasks       Task[]
+  milestones  Milestone[]
+  
   @@map("projects")
 }
 
 model ProjectEmployee {
-  projectId  Int      @map("project_id")
-  employeeId Int      @map("employee_id")
+  projectId  Int @map("project_id")
+  employeeId Int @map("employee_id")
   joinedAt   DateTime @default(now()) @map("joined_at")
-
+  
   // Relations
   project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-
+  
   @@id([projectId, employeeId])
   @@map("project_employees")
 }
@@ -110,11 +110,11 @@ model Task {
   endDate     DateTime?  @map("end_date")
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
-
+  
   // Relations
   project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assignedTo Employee? @relation(fields: [employeeId], references: [id])
-
+  
   @@map("tasks")
 }
 
@@ -125,10 +125,10 @@ model Milestone {
   dueDate   DateTime @map("due_date")
   completed Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
-
+  
   // Relations
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
+  
   @@map("milestones")
 }
 
@@ -136,7 +136,7 @@ model Milestone {
 enum SystemRole {
   ADMIN
   EMPLOYEE
-
+  
   @@map("system_role")
 }
 
@@ -145,7 +145,7 @@ enum ProficiencyLevel {
   INTERMEDIATE
   ADVANCED
   EXPERT
-
+  
   @@map("proficiency_level")
 }
 
@@ -154,7 +154,7 @@ enum Priority {
   MEDIUM
   HIGH
   CRITICAL
-
+  
   @@map("priority")
 }
 
@@ -164,7 +164,7 @@ enum ProjectStatus {
   ON_HOLD
   COMPLETED
   CANCELLED
-
+  
   @@map("project_status")
 }
 
@@ -174,6 +174,6 @@ enum TaskStatus {
   IN_REVIEW
   COMPLETED
   BLOCKED
-
+  
   @@map("task_status")
 }
