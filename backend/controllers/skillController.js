@@ -1,4 +1,4 @@
-import prisma from "../prisma.js";
+import prisma from "../prismaClient.js";
 
 // Create Skill
 export const createSkill = async (req, res) => {

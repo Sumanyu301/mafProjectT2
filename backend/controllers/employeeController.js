@@ -1,4 +1,4 @@
-import prisma from "../prisma.js";
+import prisma from "../prismaClient.js";
 
 // Create Employee
 export const createEmployee = async (req, res) => {
@@ -21,9 +21,13 @@ export const getAllEmployees = async (req, res) => {
     const employees = await prisma.employee.findMany({
       where: {
         ...(availability && { availability: availability === "true" }),
-        ...(manager && { managerName: { contains: manager, mode: "insensitive" } }),
+        ...(manager && {
+          managerName: { contains: manager, mode: "insensitive" },
+        }),
         ...(skill && {
-          skills: { some: { skill: { name: { contains: skill, mode: "insensitive" } } } },
+          skills: {
+            some: { skill: { name: { contains: skill, mode: "insensitive" } } },
+          },
         }),
       },
       include: { user: true, skills: { include: { skill: true } } },
