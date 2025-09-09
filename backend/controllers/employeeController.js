@@ -27,6 +27,55 @@ export const createEmployee = async (req, res) => {
   }
 };
 
+// Create Employee Profile for Any User (Admin only)
+export const createEmployeeForUser = async (req, res) => {
+  try {
+    const { userId, name, contact } = req.body;
+
+    // Check if user is admin
+    if (req.user.systemRole !== "ADMIN") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(userId) },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if employee profile already exists for this user
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { userId: parseInt(userId) },
+    });
+
+    if (existingEmployee) {
+      return res
+        .status(400)
+        .json({ error: "Employee profile already exists for this user" });
+    }
+
+    const employee = await prisma.employee.create({
+      data: {
+        userId: parseInt(userId),
+        name: name || user.username,
+        contact: contact || user.email,
+      },
+      include: {
+        user: {
+          select: { id: true, username: true, email: true, systemRole: true },
+        },
+      },
+    });
+
+    res.status(201).json(employee);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Get All Employees
 export const getAllEmployees = async (req, res) => {
   try {
@@ -332,11 +381,9 @@ export const updateEmployeeAvailability = async (req, res) => {
     }
 
     if (employee.userId !== req.user.id && req.user.systemRole !== "ADMIN") {
-      return res
-        .status(403)
-        .json({
-          error: "Not authorized to update this employee's availability",
-        });
+      return res.status(403).json({
+        error: "Not authorized to update this employee's availability",
+      });
     }
 
     const updatedEmployee = await prisma.employee.update({
@@ -387,7 +434,7 @@ export const isEmployeeBooked = async (req, res) => {
       isBooked: isBooked,
       status: isBooked ? "BOOKED" : "AVAILABLE",
       activeTasks: activeTasks,
-      availability: employee.availability
+      availability: employee.availability,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -410,10 +457,10 @@ export const getAllEmployeesBookingStatus = async (req, res) => {
       },
     });
 
-    const employeesWithStatus = employees.map(employee => {
+    const employeesWithStatus = employees.map((employee) => {
       const activeTasks = employee.assignedTasks.length;
       const isBooked = activeTasks > 0;
-      
+
       return {
         employeeId: employee.id,
         name: employee.name,
@@ -422,7 +469,7 @@ export const getAllEmployeesBookingStatus = async (req, res) => {
         status: isBooked ? "BOOKED" : "AVAILABLE",
         activeTasks: activeTasks,
         availability: employee.availability,
-        user: employee.user
+        user: employee.user,
       };
     });
 
@@ -430,9 +477,9 @@ export const getAllEmployeesBookingStatus = async (req, res) => {
       employees: employeesWithStatus,
       summary: {
         total: employeesWithStatus.length,
-        available: employeesWithStatus.filter(emp => !emp.isBooked).length,
-        booked: employeesWithStatus.filter(emp => emp.isBooked).length
-      }
+        available: employeesWithStatus.filter((emp) => !emp.isBooked).length,
+        booked: employeesWithStatus.filter((emp) => emp.isBooked).length,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
