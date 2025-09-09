@@ -60,10 +60,17 @@ export async function signUp(req, res) {
 
 export async function loginUser(req, res) {
   console.log("Login request received");
-  const { email, password } = req.body;
+  // const { email, password } = req.body;
+  const { identifier, password } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
+    // const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: identifier }, { username: identifier }],
+      },
+    });
+
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
@@ -120,7 +127,7 @@ export async function verifyUser(req, res) {
       message: "Protected data",
       id: decoded.id,
       email: decoded.email,
-      role: decoded.role,
+      role: decoded.systemRole
     });
   });
 }

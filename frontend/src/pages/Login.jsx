@@ -13,16 +13,8 @@ function Login() {
     setIsLoading(true);
     setError("");
     try {
-      const res = await authAPI.login(data);
-
-      // Save token/user in localStorage
-      localStorage.setItem("token", res.token);
-      if (res.user) {
-        localStorage.setItem("user", JSON.stringify(res.user));
-      }
-
-      // Navigate to dashboard
-      setTimeout(() => navigate("/dashboard"), 500);
+      await authAPI.login(data); // backend sets cookie
+      navigate("/projects"); // redirect to projects page
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Login failed");
     } finally {
@@ -44,7 +36,7 @@ function Login() {
         <AuthForm 
           title="Login" 
           onSubmit={handleLogin} 
-          buttonText={isLoading ? "Signing In..." : "Sign In"}
+          buttonText={isLoading ? "Logging In..." : "Log In"}
           isLoading={isLoading}
         />
         {error && <p className="text-red-600 text-sm mt-2 font-medium">{error}</p>}
@@ -91,3 +83,46 @@ function Login() {
 }
 
 export default Login;
+
+// Login.jsx
+// import { useNavigate, Link } from "react-router-dom";
+// import { useState } from "react";
+// import AuthForm from "../components/AuthForm";
+// import { authAPI } from "../services/authAPI";
+// import { ArrowRight, Sparkles } from "lucide-react";
+
+// function Login() {
+//   const navigate = useNavigate();
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [error, setError] = useState("");
+
+// const handleLogin = async (data) => {
+//   setIsLoading(true);
+//   setError("");
+//   try {
+//     await authAPI.login(data); // backend sets cookie
+//     navigate("/projects"); // redirect to projects page
+//   } catch (err) {
+//     setError(err.response?.data?.message || err.message || "Login failed");
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
+
+//   return (
+//     <div className="min-h-screen bg-white relative overflow-hidden">
+//       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
+//         <AuthForm
+//           title="Login"
+//           onSubmit={handleLogin}
+//           buttonText={isLoading ? "Signing In..." : "Sign In"}
+//           isLoading={isLoading}
+//         />
+//         {error && <p className="text-red-600 text-sm mt-2 font-medium">{error}</p>}
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default Login;

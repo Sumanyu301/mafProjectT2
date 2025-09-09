@@ -1,42 +1,45 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import AuthForm from "../components/AuthForm";
-import { authAPI } from "../services/authAPI";
 import { ArrowLeft, CheckCircle, Users, Shield, Zap } from "lucide-react";
+
+import { authAPI } from "../services/authAPI";
 
 function Signup() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleSignup = async (data) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await authAPI.signup(data);
-      console.log("Signup success:", res);
 
-      // Navigate after short delay
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+const handleSignup = async (data) => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    const res = await authAPI.signup({
+      username: data.username,
+      email: data.email,
+      password: data.password,
+    });
 
-    } catch (err) {
-      setError(err.response?.data?.message || err.message || "Signup failed");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    console.log("Signup success:", res);
+
+    setTimeout(() => navigate("/login"), 1500);
+  } catch (err) {
+    setError(err.response?.data?.message || err.message || "Signup failed");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const features = [
     { icon: Users, text: "Join our growing community" },
     { icon: Shield, text: "Enterprise-grade security" },
-    { icon: Zap, text: "Lightning-fast performance" }
+    { icon: Zap, text: "Lightning-fast performance" },
   ];
 
   return (
     <div className="min-h-screen bg-white relative overflow-hidden">
-      {/* Minimal background decoration */}
+      {/* Background decoration */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-20 w-32 h-32 bg-blue-50 rounded-full opacity-60"></div>
         <div className="absolute bottom-20 right-20 w-24 h-24 bg-red-50 rounded-full opacity-60"></div>
@@ -53,7 +56,7 @@ function Signup() {
             </h1>
 
             <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-              Create your account today and unlock a world of possibilities. 
+              Create your account today and unlock a world of possibilities.
               Experience innovation like never before.
             </p>
 
@@ -89,10 +92,10 @@ function Signup() {
 
         {/* Right side - Auth form */}
         <div className="lg:w-1/2 flex flex-col items-center justify-center p-4 lg:p-8 bg-white">
-          <AuthForm 
-            title="Signup" 
-            onSubmit={handleSignup} 
-            buttonText="Create Account" 
+          <AuthForm
+            title="Signup"
+            onSubmit={handleSignup}
+            buttonText="Create Account"
             isLoading={isLoading}
             error={error}
           />
@@ -109,8 +112,8 @@ function Signup() {
                 Welcome back! Sign in to continue your journey with us.
               </p>
 
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="inline-flex items-center justify-center w-full bg-blue-900 hover:bg-blue-800 text-white py-3 px-6 rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] shadow-sm hover:shadow-md group"
               >
                 <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
