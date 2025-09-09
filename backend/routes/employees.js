@@ -28,6 +28,7 @@ router.get("/:id/booked", verifyToken, isEmployeeBooked);
 router.get("/:id", verifyToken, getEmployeeById);
 router.put("/:id", verifyToken, updateEmployee);
 router.put("/:id/availability", verifyToken, updateEmployeeAvailability);
-router.delete("/:id", verifyToken, deleteEmployee);
+// Note: To delete an employee, delete the associated user via DELETE /api/users/:id
+// This will automatically cascade delete the employee record
 
 export default router;

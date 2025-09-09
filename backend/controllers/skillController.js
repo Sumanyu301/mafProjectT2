@@ -139,20 +139,24 @@ export const removeSkillFromEmployee = async (req, res) => {
   try {
     // Get data from request body instead of URL params
     const { employeeId, skillId } = req.body;
-    
+
     console.log("Debug - Remove skill request body:", req.body);
     console.log("Debug - Employee ID:", employeeId);
     console.log("Debug - Skill ID:", skillId);
-    
+
     if (!employeeId || !skillId) {
-      return res.status(400).json({ error: "Employee ID and Skill ID are required" });
+      return res
+        .status(400)
+        .json({ error: "Employee ID and Skill ID are required" });
     }
 
     const employeeIdNumber = Number(employeeId);
     const skillIdNumber = Number(skillId);
-    
+
     if (isNaN(employeeIdNumber) || isNaN(skillIdNumber)) {
-      return res.status(400).json({ error: "Employee ID and Skill ID must be valid numbers" });
+      return res
+        .status(400)
+        .json({ error: "Employee ID and Skill ID must be valid numbers" });
     }
 
     // Check if the skill assignment exists
@@ -178,13 +182,13 @@ export const removeSkillFromEmployee = async (req, res) => {
         },
       },
     });
-    
-    res.json({ 
+
+    res.json({
       message: "Skill removed from employee successfully",
       removed: {
         employeeId: employeeIdNumber,
-        skillId: skillIdNumber
-      }
+        skillId: skillIdNumber,
+      },
     });
   } catch (error) {
     console.error("Error removing skill:", error);
