@@ -1,16 +1,18 @@
 import prisma from "../prismaClient.js";
 
-// Create a task under a project (Admin only)
+// Create a task under a project (Authenticated users)
 export async function createTask(req, res) {
   try {
     const { id } = req.params; // project id
-    const { title, description, priority, startDate, endDate, assignedTo } =
-      req.body;
-
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
+    const {
+      title,
+      description,
+      priority = "MEDIUM",
+      estimatedHours,
+      startDate,
+      endDate,
+      assignedTo,
+    } = req.body;
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
@@ -48,6 +50,8 @@ export async function createTask(req, res) {
       data: {
         title,
         description,
+        priority: priority || "MEDIUM",
+        estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null,
         startDate: parsedStartDate,
         endDate: parsedEndDate,
         projectId: parseInt(id),
@@ -98,7 +102,7 @@ export async function getProjectTasks(req, res) {
         project: {
           select: { id: true, title: true },
         },
-        assignee: {
+        assignedTo: {
           select: { id: true, name: true, contact: true },
         },
       },
@@ -129,7 +133,7 @@ export async function getTaskById(req, res) {
             priority: true,
           },
         },
-        assignee: {
+        assignedTo: {
           select: {
             id: true,
             name: true,
@@ -150,7 +154,7 @@ export async function getTaskById(req, res) {
   }
 }
 
-// Update a task (Admin only)
+// Update a task (Authenticated users)
 export async function updateTask(req, res) {
   try {
     const { taskId } = req.params;
@@ -163,11 +167,6 @@ export async function updateTask(req, res) {
       endDate,
       assignedTo,
     } = req.body;
-
-    // Check if user is admin
-    if (req.user.role !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
 
     // Check if task exists
     const existingTask = await prisma.task.findUnique({
@@ -224,7 +223,7 @@ export async function updateTask(req, res) {
         project: {
           select: { id: true, title: true },
         },
-        assignee: {
+        assignedTo: {
           select: { id: true, name: true, contact: true },
         },
       },
@@ -243,7 +242,7 @@ export async function deleteTask(req, res) {
     const { taskId } = req.params;
 
     // Check if user is admin
-    if (req.user.role !== "ADMIN") {
+    if (req.user.systemRole !== "ADMIN") {
       return res.status(403).json({ error: "Admin access required" });
     }
 

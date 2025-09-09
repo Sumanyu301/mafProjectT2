@@ -10,7 +10,7 @@ import { verifyToken } from "../middlewares/authMiddlewares.js";
 
 const router = express.Router();
 
-// POST /projects/:id/tasks - Create task under project (Admin only)
+// POST /projects/:id/tasks - Create task under project (Authenticated users)
 router.post("/projects/:id/tasks", verifyToken, createTask);
 
 // GET /projects/:id/tasks - Get all tasks for a project
@@ -19,7 +19,7 @@ router.get("/projects/:id/tasks", verifyToken, getProjectTasks);
 // GET /tasks/:taskId - Get single task by ID
 router.get("/tasks/:taskId", verifyToken, getTaskById);
 
-// PUT /tasks/:taskId - Update task (Admin only)
+// PUT /tasks/:taskId - Update task (Authenticated users)
 router.put("/tasks/:taskId", verifyToken, updateTask);
 
 // DELETE /tasks/:taskId - Delete task (Admin only)

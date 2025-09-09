@@ -4,7 +4,7 @@ import prisma from "../prismaClient.js";
 export async function createMilestone(req, res) {
   try {
     const { id } = req.params; // project id
-    const { title, description, dueDate } = req.body;
+    const { title, dueDate } = req.body;
 
     // Check if user is admin
     if (req.user.systemRole !== "ADMIN") {
@@ -31,7 +31,6 @@ export async function createMilestone(req, res) {
     const milestone = await prisma.milestone.create({
       data: {
         title,
-        description,
         dueDate: parsedDueDate,
         projectId: parseInt(id),
         completed: false,
@@ -92,7 +91,7 @@ export async function getProjectMilestones(req, res) {
 export async function updateMilestone(req, res) {
   try {
     const { milestoneId } = req.params;
-    const { title, description, dueDate, completed } = req.body;
+    const { title, dueDate, completed } = req.body;
 
     // Check if user is admin
     if (req.user.systemRole !== "ADMIN") {
@@ -111,7 +110,6 @@ export async function updateMilestone(req, res) {
     // Prepare update data with date validation
     const updateData = {};
     if (title !== undefined) updateData.title = title;
-    if (description !== undefined) updateData.description = description;
     if (completed !== undefined) updateData.completed = completed;
 
     if (dueDate !== undefined) {

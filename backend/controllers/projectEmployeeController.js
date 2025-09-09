@@ -7,7 +7,7 @@ export async function assignEmployeesToProject(req, res) {
     const { employeeIds } = req.body; // array of employee IDs
 
     // Check if user is admin
-    if (req.user.role !== "ADMIN") {
+    if (req.user.systemRole !== "ADMIN") {
       return res.status(403).json({ error: "Admin access required" });
     }
 
@@ -68,7 +68,6 @@ export async function assignEmployeesToProject(req, res) {
                 id: true,
                 name: true,
                 contact: true,
-                designation: true,
               },
             },
           },
@@ -108,9 +107,8 @@ export async function getProjectEmployees(req, res) {
             id: true,
             name: true,
             contact: true,
-            designation: true,
-            department: true,
-            joiningDate: true,
+            availability: true,
+            maxTasks: true,
           },
         },
       },
@@ -138,7 +136,7 @@ export async function removeEmployeeFromProject(req, res) {
     const { id, employeeId } = req.params; // project id and employee id
 
     // Check if user is admin
-    if (req.user.role !== "ADMIN") {
+    if (req.user.systemRole !== "ADMIN") {
       return res.status(403).json({ error: "Admin access required" });
     }
 
