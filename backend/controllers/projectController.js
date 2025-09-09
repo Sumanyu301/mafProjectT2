@@ -6,7 +6,7 @@ export async function createProject(req, res) {
     const { title, description, priority, startDate, deadline } = req.body;
 
     // Check if user is admin
-    if (req.user.role !== "ADMIN") {
+    if (req.user.systemRole !== "ADMIN") {
       return res.status(403).json({ error: "Admin access required" });
     }
 
@@ -122,7 +122,7 @@ export async function getProjectById(req, res) {
       where: { id: parseInt(id) },
       include: {
         creator: {
-          select: { id: true, name: true, contact: true, designation: true },
+          select: { id: true, name: true, contact: true },
         },
         members: {
           include: {
@@ -131,7 +131,6 @@ export async function getProjectById(req, res) {
                 id: true,
                 name: true,
                 contact: true,
-                designation: true,
               },
             },
           },
@@ -144,7 +143,7 @@ export async function getProjectById(req, res) {
             priority: true,
             startDate: true,
             endDate: true,
-            assignee: {
+            assignedTo: {
               select: { id: true, name: true },
             },
           },
@@ -179,7 +178,7 @@ export async function updateProject(req, res) {
       req.body;
 
     // Check if user is admin
-    if (req.user.role !== "ADMIN") {
+    if (req.user.systemRole !== "ADMIN") {
       return res.status(403).json({ error: "Admin access required" });
     }
 
@@ -248,7 +247,7 @@ export async function deleteProject(req, res) {
     const { id } = req.params;
 
     // Check if user is admin
-    if (req.user.role !== "ADMIN") {
+    if (req.user.systemRole !== "ADMIN") {
       return res.status(403).json({ error: "Admin access required" });
     }
 
