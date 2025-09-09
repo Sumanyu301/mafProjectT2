@@ -5,12 +5,14 @@ import {
   assignSkillToEmployee,
   removeSkillFromEmployee,
 } from "../controllers/skillController.js";
+import { verifyToken } from "../middlewares/authMiddlewares.js";
 
 const router = express.Router();
 
-router.post("/", createSkill);
-router.get("/", getAllSkills);
-router.post("/:employeeId/skills", assignSkillToEmployee);
-router.delete("/:employeeId/skills/:skillId", removeSkillFromEmployee);
+// All skill routes require authentication
+router.post("/", verifyToken, createSkill);
+router.get("/", verifyToken, getAllSkills);
+router.post("/assign", verifyToken, assignSkillToEmployee);
+router.delete("/remove", verifyToken, removeSkillFromEmployee);
 
 export default router;

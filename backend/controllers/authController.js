@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
 export async function signUp(req, res) {
   console.log("Sign up request received");
-  const { username, email, password } = req.body;
+  const { username, email, password, name, contact } = req.body;
 
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -18,16 +18,38 @@ export async function signUp(req, res) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await prisma.user.create({
-      data: {
-        username,
-        email,
-        passwordHash: hashedPassword,
-        systemRole: "EMPLOYEE", // default role
-      },
+    // Create user and employee profile in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create the user
+      const newUser = await tx.user.create({
+        data: {
+          username,
+          email,
+          passwordHash: hashedPassword,
+          systemRole: "EMPLOYEE", // default role
+        },
+      });
+
+      // Automatically create employee profile
+      const newEmployee = await tx.employee.create({
+        data: {
+          userId: newUser.id,
+          name: name || username, // Use provided name or fallback to username
+          contact: contact || email, // Use provided contact or fallback to email
+          availability: "AVAILABLE",
+          maxTasks: 5, // default capacity
+          currentWorkload: 0,
+        },
+      });
+
+      return { user: newUser, employee: newEmployee };
     });
 
-    res.status(201).json({ message: "User created successfully" });
+    res.status(201).json({
+      message: "User and employee profile created successfully",
+      userId: result.user.id,
+      employeeId: result.employee.id,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
