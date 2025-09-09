@@ -9,6 +9,15 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         {/* later: <Route path="/dashboard" element={<Dashboard />} /> */}
+        {/* <Route
+          path="/projects"
+          element={
+            <ProtectedRoute>
+              <Projects />
+            </ProtectedRoute>
+          }
+        /> */}
+
       </Routes>
     </Router>
   );

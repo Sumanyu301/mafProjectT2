@@ -13,6 +13,9 @@ CREATE TYPE "public"."project_status" AS ENUM ('PLANNING', 'IN_PROGRESS', 'ON_HO
 -- CreateEnum
 CREATE TYPE "public"."task_status" AS ENUM ('TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED', 'BLOCKED');
 
+-- CreateEnum
+CREATE TYPE "public"."availability_status" AS ENUM ('AVAILABLE', 'BUSY', 'OVERLOADED', 'ON_LEAVE');
+
 -- CreateTable
 CREATE TABLE "public"."users" (
     "id" SERIAL NOT NULL,
@@ -32,6 +35,9 @@ CREATE TABLE "public"."employees" (
     "user_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "contact" TEXT NOT NULL,
+    "availability" "public"."availability_status" NOT NULL DEFAULT 'AVAILABLE',
+    "max_tasks" INTEGER NOT NULL DEFAULT 5,
+    "current_workload" DOUBLE PRECISION NOT NULL DEFAULT 0,
 
     CONSTRAINT "employees_pkey" PRIMARY KEY ("id")
 );
@@ -87,6 +93,9 @@ CREATE TABLE "public"."tasks" (
     "title" TEXT NOT NULL,
     "description" TEXT,
     "status" "public"."task_status" NOT NULL DEFAULT 'TODO',
+    "priority" "public"."priority" NOT NULL DEFAULT 'MEDIUM',
+    "estimated_hours" DOUBLE PRECISION,
+    "actual_hours" DOUBLE PRECISION,
     "start_date" TIMESTAMP(3),
     "end_date" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -132,16 +141,16 @@ ALTER TABLE "public"."employee_skills" ADD CONSTRAINT "employee_skills_skill_id_
 ALTER TABLE "public"."projects" ADD CONSTRAINT "projects_created_by_fkey" FOREIGN KEY ("created_by") REFERENCES "public"."employees"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."project_employees" ADD CONSTRAINT "project_employees_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "public"."project_employees" ADD CONSTRAINT "project_employees_employee_id_fkey" FOREIGN KEY ("employee_id") REFERENCES "public"."employees"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "public"."project_employees" ADD CONSTRAINT "project_employees_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_employee_id_fkey" FOREIGN KEY ("employee_id") REFERENCES "public"."employees"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."tasks" ADD CONSTRAINT "tasks_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."milestones" ADD CONSTRAINT "milestones_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
