@@ -14,7 +14,7 @@ import {
   Target
 } from "lucide-react";
 
-function ProjectDetailsPage({ userRole = "admin" }) {
+function ProjectDetailsPage({ systemRole = "admin" }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
@@ -122,12 +122,6 @@ function ProjectDetailsPage({ userRole = "admin" }) {
                 <h1 className="text-3xl font-bold text-blue-900 mb-2">{project.name}</h1>
                 <p className="text-gray-700 text-lg leading-relaxed">{project.description}</p>
               </div>
-              {userRole === "admin" && (
-                <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-all duration-200 border border-gray-300">
-                  <Pencil size={16} />
-                  Edit Project
-                </button>
-              )}
             </div>
 
             {/* Status and Priority Badges */}
@@ -195,12 +189,6 @@ function ProjectDetailsPage({ userRole = "admin" }) {
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-blue-900">Team Members</h2>
-            {userRole === "admin" && (
-              <button className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition-all duration-200">
-                <Plus size={16} />
-                Add Member
-              </button>
-            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -231,15 +219,11 @@ function ProjectDetailsPage({ userRole = "admin" }) {
         </div>
 
         {/* Admin Actions */}
-        {userRole === "admin" && (
+        {systemRole === "admin" && (
           <div className="mt-8 bg-white rounded-lg shadow-lg p-6 border border-gray-200">
             <h3 className="text-lg font-semibold text-blue-900 mb-4">Admin Actions</h3>
             <div className="flex flex-wrap gap-4">
-              <button className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg transition-all duration-200 font-medium">
-                <Plus size={16} />
-                Add Employee
-              </button>
-              <button className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg transition-all duration-200 font-medium">
+              <button onClick={() => navigate("/admin")} className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg transition-all duration-200 font-medium">
                 <Pencil size={16} />
                 Edit Details
               </button>
