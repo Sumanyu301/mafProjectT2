@@ -3,12 +3,7 @@ import prisma from "../prismaClient.js";
 // Create a new project (Admin only)
 export async function createProject(req, res) {
   try {
-    const { title, description, priority, startDate, deadline } = req.body;
-
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
+    const { title, description, priority, startDate, deadline, employees = [] } = req.body;
 
     // Get employee profile for the admin user
     const user = await prisma.user.findUnique({
@@ -43,6 +38,11 @@ export async function createProject(req, res) {
         deadline: parsedDeadline,
         createdBy: user.employee.id,
         status: "PLANNING",
+        members: {
+          create: employees.map((empId) => ({
+            employee: { connect: { id: empId } },
+          })),
+        },
       },
       include: {
         creator: {
@@ -114,6 +114,61 @@ export async function getAllProjects(req, res) {
 // ------------------------------------------------------------------------------------------------------------
 
 // Get a single project by ID with details
+// export async function getProjectById(req, res) {
+//   try {
+//     const { id } = req.params;
+
+//     const project = await prisma.project.findUnique({
+//       where: { id: parseInt(id) },
+//       include: {
+//         creator: {
+//           select: { id: true, name: true, contact: true },
+//         },
+//         members: {
+//           include: {
+//             employee: {
+//               select: {
+//                 id: true,
+//                 name: true,
+//                 contact: true,
+//               },
+//             },
+//           },
+//         },
+//         tasks: {
+//           select: {
+//             id: true,
+//             title: true,
+//             status: true,
+//             priority: true,
+//             startDate: true,
+//             endDate: true,
+//             assignedTo: {
+//               select: { id: true, name: true },
+//             },
+//           },
+//         },
+//         milestones: {
+//           select: {
+//             id: true,
+//             title: true,
+//             dueDate: true,
+//             completed: true,
+//           },
+//         },
+//       },
+//     });
+
+//     if (!project) {
+//       return res.status(404).json({ error: "Project not found" });
+//     }
+
+//     res.json(project);
+//   } catch (error) {
+//     console.error("Error fetching project:", error);
+//     res.status(500).json({ error: error.message });
+//   }
+// }
 export async function getProjectById(req, res) {
   try {
     const { id } = req.params;
@@ -121,17 +176,11 @@ export async function getProjectById(req, res) {
     const project = await prisma.project.findUnique({
       where: { id: parseInt(id) },
       include: {
-        creator: {
-          select: { id: true, name: true, contact: true },
-        },
+        creator: { select: { id: true, name: true, contact: true } },
         members: {
           include: {
             employee: {
-              select: {
-                id: true,
-                name: true,
-                contact: true,
-              },
+              select: { id: true, name: true, contact: true },
             },
           },
         },
@@ -143,18 +192,11 @@ export async function getProjectById(req, res) {
             priority: true,
             startDate: true,
             endDate: true,
-            assignedTo: {
-              select: { id: true, name: true },
-            },
+            assignedTo: { select: { id: true, name: true } },
           },
         },
         milestones: {
-          select: {
-            id: true,
-            title: true,
-            dueDate: true,
-            completed: true,
-          },
+          select: { id: true, title: true, dueDate: true, completed: true },
         },
       },
     });
@@ -163,35 +205,38 @@ export async function getProjectById(req, res) {
       return res.status(404).json({ error: "Project not found" });
     }
 
-    res.json(project);
+    // 🔥 Flatten members (replace { employee: {...} } with just {...})
+    const formattedProject = {
+      ...project,
+      members: project.members.map((m) => m.employee),
+    };
+
+    res.json(formattedProject);
   } catch (error) {
     console.error("Error fetching project:", error);
     res.status(500).json({ error: error.message });
   }
 }
 
+
 // Update a project (Admin only)
 export async function updateProject(req, res) {
   try {
     const { id } = req.params;
-    const { title, description, priority, status, startDate, deadline } =
-      req.body;
-
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
+    const { title, description, priority, status, startDate, deadline, employees } =
+      req.body; // employees = array of employee IDs
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
       where: { id: parseInt(id) },
+      include: { members: true },
     });
 
     if (!existingProject) {
       return res.status(404).json({ error: "Project not found" });
     }
 
-    // Prepare update data with date validation
+    // Prepare update data
     const updateData = {};
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
@@ -214,7 +259,7 @@ export async function updateProject(req, res) {
       updateData.deadline = parsedDeadline;
     }
 
-    // Update the project
+    // ✅ Update project fields first
     const updatedProject = await prisma.project.update({
       where: { id: parseInt(id) },
       data: updateData,
@@ -232,12 +277,50 @@ export async function updateProject(req, res) {
       },
     });
 
-    res.json(updatedProject);
+    // ✅ Update members separately if provided
+    if (employees !== undefined && Array.isArray(employees)) {
+      // Delete all existing members
+      await prisma.projectEmployee.deleteMany({
+        where: { projectId: parseInt(id) },
+      });
+
+      // Add new members
+      const memberData = employees.map((empId) => ({
+        projectId: parseInt(id),
+        employeeId: parseInt(empId),
+      }));
+
+      await prisma.projectEmployee.createMany({
+        data: memberData,
+        skipDuplicates: true,
+      });
+    }
+
+    // Fetch updated project with members again
+    const projectWithMembers = await prisma.project.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        creator: {
+          select: { id: true, name: true, contact: true },
+        },
+        members: {
+          include: {
+            employee: {
+              select: { id: true, name: true, contact: true },
+            },
+          },
+        },
+      },
+    });
+
+    res.json(projectWithMembers);
   } catch (error) {
     console.error("Error updating project:", error);
     res.status(500).json({ error: error.message });
   }
 }
+
+
 
 // ------------------------------------------------------------------------------------------------------------
 
@@ -245,11 +328,6 @@ export async function updateProject(req, res) {
 export async function deleteProject(req, res) {
   try {
     const { id } = req.params;
-
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
