@@ -117,7 +117,7 @@ const handleSignup = async (data) => {
                 className="inline-flex items-center justify-center w-full bg-blue-900 hover:bg-blue-800 text-white py-3 px-6 rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] shadow-sm hover:shadow-md group"
               >
                 <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                <span>Sign In Instead</span>
+                <span>Log In Instead</span>
               </Link>
             </div>
 

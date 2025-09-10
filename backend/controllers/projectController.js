@@ -3,12 +3,7 @@ import prisma from "../prismaClient.js";
 // Create a new project (Admin only)
 export async function createProject(req, res) {
   try {
-    const { title, description, priority, startDate, deadline } = req.body;
-
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
+    const { title, description, priority, startDate, deadline, employees = [] } = req.body;
 
     // Get employee profile for the admin user
     const user = await prisma.user.findUnique({
@@ -43,6 +38,11 @@ export async function createProject(req, res) {
         deadline: parsedDeadline,
         createdBy: user.employee.id,
         status: "PLANNING",
+        members: {
+          create: employees.map((empId) => ({
+            employee: { connect: { id: empId } },
+          })),
+        },
       },
       include: {
         creator: {
@@ -178,9 +178,7 @@ export async function updateProject(req, res) {
       req.body;
 
     // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
+
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
@@ -247,9 +245,7 @@ export async function deleteProject(req, res) {
     const { id } = req.params;
 
     // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
+
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
