@@ -14,7 +14,7 @@ function Login() {
     setError("");
     try {
       await authAPI.login(data); // backend sets cookie
-      navigate("/projects"); // redirect to projects page
+      navigate("/"); // redirect to projects page
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Login failed");
     } finally {

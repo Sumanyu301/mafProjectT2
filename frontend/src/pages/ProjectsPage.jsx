@@ -66,7 +66,9 @@ function ProjectsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="p-8 max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="mb-8">
+      <div className="mb-8 flex items-center justify-between">
+        {/* Left side (title + description) */}
+        <div>
           <div className="flex items-center mb-4">
             <FolderOpen className="h-8 w-8 text-red-600 mr-3" />
             <h1 className="text-3xl font-bold text-blue-900">Ongoing Projects</h1>
@@ -75,6 +77,8 @@ function ProjectsPage() {
             Track and manage your active projects with real-time updates and progress monitoring.
           </p>
         </div>
+      </div>
+
 
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -174,6 +178,7 @@ function ProjectsPage() {
             </button>
           </div>
         )}
+
       </div>
     </div>
   );

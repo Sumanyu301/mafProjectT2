@@ -569,8 +569,8 @@ const AdminProjects = () => {
         title,
         description,
         priority,
-        startDate,
-        deadline,
+        startDate: startDate ? new Date(startDate).toISOString() : null,
+        deadline: deadline ? new Date(deadline).toISOString() : null,
         employees: selectedEmployees, // pass selected employee IDs
       };
 
