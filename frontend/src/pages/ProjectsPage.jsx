@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FolderOpen, ArrowRight, Clock, Users } from "lucide-react";
 
-function ProjectsPage() {
+function ProjectsPage({ systemRole = "admin" }) {
   const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
 
@@ -67,15 +67,27 @@ function ProjectsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="p-8 max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <FolderOpen className="h-8 w-8 text-red-600 mr-3" />
-            <h1 className="text-3xl font-bold text-blue-900">Ongoing Projects</h1>
-          </div>
-          <p className="text-gray-700 text-lg">
-            Track and manage your active projects with real-time updates and progress monitoring.
-          </p>
-        </div>
+<div className="mb-8 flex items-center justify-between">
+  {/* Left side (title + description) */}
+  <div>
+    <div className="flex items-center mb-4">
+      <FolderOpen className="h-8 w-8 text-red-600 mr-3" />
+      <h1 className="text-3xl font-bold text-blue-900">Ongoing Projects</h1>
+    </div>
+    <p className="text-gray-700 text-lg">
+      Track and manage your active projects with real-time updates and progress monitoring.
+    </p>
+  </div>
+
+  {/* Right side (user avatar button) */}
+  <button
+    onClick={() => (window.location.href = "/profile")}
+    className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-900 text-white font-semibold hover:bg-blue-800 transition-all"
+  >
+    AM {/* Replace with dynamic initials later */}
+  </button>
+</div>
+
 
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -148,9 +160,9 @@ function ProjectsPage() {
 
         {/* Action Button */}
         <div className="mt-8 text-center">
-          <button className="bg-blue-900 text-white px-8 py-3 rounded-lg hover:bg-blue-800 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02]">
+          {systemRole === "admin" && (<button onClick={() => navigate("/admin")} className="bg-blue-900 text-white px-8 py-3 rounded-lg hover:bg-blue-800 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02]">
             Create New Project
-          </button>
+          </button>)}
         </div>
       </div>
     </div>
