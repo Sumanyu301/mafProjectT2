@@ -16,6 +16,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        
         <Route element={<Layout />}>
           <Route
             path="/projects"
@@ -44,10 +45,10 @@ function App() {
           <Route path="/" element={<ProjectsPage />} />
         </Route>
         
-
         <Route path="/projects/:id" element={<ProjectDetailsPage />} />
-        {/* <Route path="/admin" element={<AdminProjects />} /> */}
+
         <Route path="/profile" element={<EmployeeProfile />} />
+
       </Routes>
     </Router>
   );

@@ -108,7 +108,7 @@ export const getEmployeeById = async (req, res) => {
   try {
     const { id } = req.params;
     const employee = await prisma.employee.findUnique({
-      where: { id: Number(id) },
+      where: { userId: Number(id) },
       include: {
         user: {
           select: { id: true, username: true, email: true, systemRole: true },
