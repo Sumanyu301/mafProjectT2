@@ -79,11 +79,14 @@ function EmployeeProfile() {
       <div className="relative z-10 max-w-5xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center space-x-6">
-          <img
-            src="/profile.jpg"
-            alt="profile"
-            className="w-24 h-24 rounded-full shadow-md object-cover"
-          />
+          {/* Profile Avatar */}
+          <div className="w-24 h-24 bg-blue-900 text-white rounded-full shadow-md flex items-center justify-center font-bold text-2xl">
+            {employee.name
+              ?.split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()}
+          </div>
           <div>
             <h1 className="text-2xl font-bold text-blue-900">{employee.name}</h1>
             <p className="text-gray-600">{employee.email}</p>
