@@ -2,29 +2,23 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FolderOpen, ArrowRight, Clock, Users } from "lucide-react";
 
-import { authAPI } from "../services/authAPI";
 import { projectAPI } from "../services/projectAPI";
 
 function ProjectsPage() {
   const [projects, setProjects] = useState([]);
-  const [userRole, setUserRole] = useState("");
-  const [loading, setLoading] = useState(true); // NEW
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // ✅ Verify user role
-        const user = await authAPI.verify();
-        setUserRole(user.role);
-
-        // ✅ Get projects from backend
+        // ✅ Get projects from backend (no role checks)
         const data = await projectAPI.getAll();
         setProjects(data);
       } catch (err) {
         console.error("❌ Failed to load data:", err);
       } finally {
-        setLoading(false); // ✅ stop loading either way
+        setLoading(false);
       }
     };
 
@@ -51,7 +45,7 @@ function ProjectsPage() {
     return "bg-red-500";
   };
 
-    if (loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -66,19 +60,17 @@ function ProjectsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="p-8 max-w-7xl mx-auto">
         {/* Header Section */}
-      <div className="mb-8 flex items-center justify-between">
-        {/* Left side (title + description) */}
-        <div>
-          <div className="flex items-center mb-4">
-            <FolderOpen className="h-8 w-8 text-red-600 mr-3" />
-            <h1 className="text-3xl font-bold text-blue-900">Ongoing Projects</h1>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <div className="flex items-center mb-4">
+              <FolderOpen className="h-8 w-8 text-red-600 mr-3" />
+              <h1 className="text-3xl font-bold text-blue-900">Ongoing Projects</h1>
+            </div>
+            <p className="text-gray-700 text-lg">
+              Track and manage your active projects with real-time updates and progress monitoring.
+            </p>
           </div>
-          <p className="text-gray-700 text-lg">
-            Track and manage your active projects with real-time updates and progress monitoring.
-          </p>
         </div>
-      </div>
-
 
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -167,18 +159,15 @@ function ProjectsPage() {
           </div>
         )}
 
-        {/* Action Button (Admin only) */}
-        {userRole === "ADMIN" && (
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => navigate("/create-project")}
-              className="bg-blue-900 text-white px-8 py-3 rounded-lg hover:bg-blue-800 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02]"
-            >
-              Create New Project
-            </button>
-          </div>
-        )}
-
+        {/* Action Button (now visible for everyone) */}
+        <div className="mt-8 text-center">
+          <button
+            onClick={() => navigate("/create-project")}
+            className="bg-blue-900 text-white px-8 py-3 rounded-lg hover:bg-blue-800 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:scale-[1.02]"
+          >
+            Create New Project
+          </button>
+        </div>
       </div>
     </div>
   );
