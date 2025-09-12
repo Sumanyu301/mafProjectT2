@@ -122,7 +122,7 @@ export async function verifyUser(req, res) {
     res.status(200).json({
       message: "Protected data",
       id: decoded.id,
-      email: decoded.email,
+      email: decoded.email
     });
   });
 }

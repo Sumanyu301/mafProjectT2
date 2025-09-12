@@ -63,7 +63,7 @@ function Login() {
           </div>
 
           {/* Footer links */}
-          <div className="flex items-center justify-center space-x-6 mt-6 text-sm">
+          {/* <div className="flex items-center justify-center space-x-6 mt-6 text-sm">
             <Link to="/privacy" className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
               Privacy Policy
             </Link>
@@ -75,7 +75,7 @@ function Login() {
             <Link to="/help" className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
               Help
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
