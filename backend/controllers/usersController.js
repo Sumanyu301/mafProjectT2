@@ -1,6 +1,6 @@
 import prisma from "../prismaClient.js";
 
-export async function getUserById(req, res) {
+export async function getUserById(req, res){
   try {
     const user = await prisma.user.findUnique({
       where: { id: parseInt(req.params.id) },
@@ -15,7 +15,7 @@ export async function getUserById(req, res) {
 
 // ------------------------------------------------------------------------------------------------------------
 
-export async function updateUserById(req, res) {
+export async function updateUserById(req, res){
   const { email } = req.body;
   try {
     const updated = await prisma.user.update({

@@ -1,6 +1,6 @@
 import prisma from "../prismaClient.js";
 
-// Create a milestone for a project (Project owner only)
+// Create a milestone for a project (Admin only)
 export async function createMilestone(req, res) {
   try {
     const { id } = req.params; // project id
@@ -16,10 +16,13 @@ export async function createMilestone(req, res) {
     }
 
     // Check if user is the project owner
-    if (existingProject.ownerId !== req.user.id) {
-      return res
-        .status(403)
-        .json({ error: "Only project owner can create milestones" });
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { employee: true },
+    });
+
+    if (existingProject.ownerId !== user.employee.id) {
+      return res.status(403).json({ error: "Only project owner can create milestones" });
     }
 
     // Validate and parse due date
@@ -106,14 +109,13 @@ export async function updateMilestone(req, res) {
     }
 
     // Check if user is the project owner
-    if (existingMilestone.project.ownerId !== req.user.id) {
-      return res
-        .status(403)
-        .json({ error: "Only project owner can update milestones" });
-    }
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { employee: true },
+    });
 
-    if (!existingMilestone) {
-      return res.status(404).json({ error: "Milestone not found" });
+    if (existingMilestone.project.ownerId !== user.employee.id) {
+      return res.status(403).json({ error: "Only project owner can update milestones" });
     }
 
     // Prepare update data with date validation
@@ -147,7 +149,7 @@ export async function updateMilestone(req, res) {
   }
 }
 
-// Delete a milestone (Project owner only)
+// Delete a milestone (Admin only)
 export async function deleteMilestone(req, res) {
   try {
     const { milestoneId } = req.params;
@@ -163,14 +165,13 @@ export async function deleteMilestone(req, res) {
     }
 
     // Check if user is the project owner
-    if (existingMilestone.project.ownerId !== req.user.id) {
-      return res
-        .status(403)
-        .json({ error: "Only project owner can delete milestones" });
-    }
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { employee: true },
+    });
 
-    if (!existingMilestone) {
-      return res.status(404).json({ error: "Milestone not found" });
+    if (existingMilestone.project.ownerId !== user.employee.id) {
+      return res.status(403).json({ error: "Only project owner can delete milestones" });
     }
 
     // Delete the milestone

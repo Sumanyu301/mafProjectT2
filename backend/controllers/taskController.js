@@ -252,10 +252,13 @@ export async function deleteTask(req, res) {
     }
 
     // Check if user is the project owner
-    if (existingTask.project.ownerId !== req.user.id) {
-      return res
-        .status(403)
-        .json({ error: "Only project owner can delete tasks" });
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { employee: true },
+    });
+
+    if (existingTask.project.ownerId !== user.employee.id) {
+      return res.status(403).json({ error: "Only project owner can delete tasks" });
     }
 
     // Delete the task

@@ -1,6 +1,6 @@
 import prisma from "../prismaClient.js";
 
-// Assign employee(s) to project (Project owner only)
+// Assign employee(s) to project (Admin only)
 export async function assignEmployeesToProject(req, res) {
   try {
     const { id } = req.params; // project id
@@ -16,10 +16,13 @@ export async function assignEmployeesToProject(req, res) {
     }
 
     // Check if user is the project owner
-    if (existingProject.ownerId !== req.user.id) {
-      return res
-        .status(403)
-        .json({ error: "Only project owner can assign employees" });
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { employee: true },
+    });
+
+    if (existingProject.ownerId !== user.employee.id) {
+      return res.status(403).json({ error: "Only project owner can assign employees" });
     }
 
     // Validate input
@@ -109,6 +112,7 @@ export async function getProjectEmployees(req, res) {
             id: true,
             name: true,
             contact: true,
+            availability: true,
             maxTasks: true,
           },
         },
@@ -131,7 +135,7 @@ export async function getProjectEmployees(req, res) {
   }
 }
 
-// Remove employee from project (Project owner only)
+// Remove employee from project (Admin only)
 export async function removeEmployeeFromProject(req, res) {
   try {
     const { id, employeeId } = req.params; // project id and employee id
@@ -146,10 +150,13 @@ export async function removeEmployeeFromProject(req, res) {
     }
 
     // Check if user is the project owner
-    if (existingProject.ownerId !== req.user.id) {
-      return res
-        .status(403)
-        .json({ error: "Only project owner can remove employees" });
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { employee: true },
+    });
+
+    if (existingProject.ownerId !== user.employee.id) {
+      return res.status(403).json({ error: "Only project owner can remove employees" });
     }
 
     // Check if employee exists
