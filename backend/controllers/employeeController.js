@@ -278,7 +278,6 @@ export const getTeamWorkload = async (req, res) => {
       return {
         employeeId: employee.id,
         name: employee.name,
-        availability: employee.availability,
         taskCount,
         maxTasks: employee.maxTasks,
         capacityUsed: Math.round(capacityUsed),
@@ -300,8 +299,6 @@ export const getTeamWorkload = async (req, res) => {
       light: workloadSummary.filter((e) => e.status === "LIGHT").length,
       moderate: workloadSummary.filter((e) => e.status === "MODERATE").length,
       heavy: workloadSummary.filter((e) => e.status === "HEAVY").length,
-      onLeave: workloadSummary.filter((e) => e.availability === "ON_LEAVE")
-        .length,
       employees: workloadSummary,
     };
 
@@ -342,7 +339,6 @@ export const isEmployeeBooked = async (req, res) => {
       isBooked: isBooked,
       status: isBooked ? "BOOKED" : "AVAILABLE",
       activeTasks: activeTasks,
-      availability: employee.availability,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

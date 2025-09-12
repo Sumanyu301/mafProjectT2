@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000"; 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 // ✅ use VITE_API_URL in .env for flexibility
 
 export const authAPI = {
@@ -22,9 +22,13 @@ export const authAPI = {
 
   // Logout
   logout: async () => {
-    const res = await axios.post(`${API_URL}/api/auth/logout`, {}, {
-      withCredentials: true,
-    });
+    const res = await axios.post(
+      `${API_URL}/api/auth/logout`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
     return res.data;
   },
 
@@ -33,6 +37,6 @@ export const authAPI = {
     const res = await axios.get(`${API_URL}/api/auth/verify`, {
       withCredentials: true,
     });
-    return res.data; // {id, email, role}
+    return res.data; // {id, email}
   },
 };
