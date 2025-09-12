@@ -315,7 +315,7 @@ function AuthForm({ title, onSubmit, buttonText, isLoading }) {
 
   return (
     <div className="relative w-full max-w-md">
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 transform hover:scale-[1.01] transition-all duration-300">
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl shadow-lg p-8 transform hover:scale-[1.01] transition-all duration-300">
         <div className="text-center mb-8">
           <div className="flex justify-center">
             <img src="src/assets/maf_logo-removebg-preview.png" className="h-20 w-30 text-white" />
@@ -384,11 +384,12 @@ function AuthForm({ title, onSubmit, buttonText, isLoading }) {
           />
 
           {errors.submit && (
-            <div className="flex items-center justify-center p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              {errors.submit}
-            </div>
-          )}
+  <div className="mt-1 flex items-center px-2 py-1 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+    <AlertCircle className="h-4 w-4 mr-1 flex-shrink-0" />
+    {errors.submit}
+  </div>
+)}
+
 
           {successMessage && (
             <div className="flex items-center justify-center p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
@@ -417,7 +418,7 @@ function AuthForm({ title, onSubmit, buttonText, isLoading }) {
           <div className="text-center mt-4">
             <button
               type="button"
-              className="text-red-600 hover:text-red-700 text-sm transition-colors font-medium"
+              className="text-blue-600 hover:text-blue-700 text-sm transition-colors font-medium"
               onClick={() => console.log("Forgot password clicked")}
             >
               Forgot your password?

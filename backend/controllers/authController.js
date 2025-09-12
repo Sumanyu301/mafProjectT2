@@ -123,6 +123,7 @@ export async function verifyUser(req, res) {
       message: "Protected data",
       id: decoded.id,
       email: decoded.email,
+      // role: decoded.systemRole
     });
   });
 }
