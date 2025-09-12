@@ -7,7 +7,16 @@ export const createEmployee = async (req, res) => {
     const userId = req.user.id; // Get from authenticated user, not body
 
     // Check if employee profile already exists for this user
-    const existingEmployee = await prisma.employee.findUnique({
+    const existingEmployee = await res.json({
+      employeeId: employee.id,
+      name: employee.name,
+      isBooked: isBooked,
+      status: isBooked ? "BOOKED" : "AVAILABLE",
+      activeTasks: activeTasks,
+      maxTasks: employee.maxTasks,
+      capacityUsed: (activeTasks / employee.maxTasks) * 100,
+    });
+    employee.findUnique({
       where: { userId: userId },
     });
 
@@ -27,15 +36,10 @@ export const createEmployee = async (req, res) => {
   }
 };
 
-// Create Employee Profile for Any User (Admin only)
+// Create Employee Profile for Any User (removed admin requirement)
 export const createEmployeeForUser = async (req, res) => {
   try {
     const { userId, name, contact } = req.body;
-
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
 
     // Check if user exists
     const user = await prisma.user.findUnique({
@@ -65,7 +69,7 @@ export const createEmployeeForUser = async (req, res) => {
       },
       include: {
         user: {
-          select: { id: true, username: true, email: true, systemRole: true },
+          select: { id: true, username: true, email: true },
         },
       },
     });
@@ -91,7 +95,7 @@ export const getAllEmployees = async (req, res) => {
       },
       include: {
         user: {
-          select: { id: true, username: true, email: true, systemRole: true }, // Don't expose password
+          select: { id: true, username: true, email: true }, // Don't expose password
         },
         skills: { include: { skill: true } },
       },
@@ -111,7 +115,7 @@ export const getEmployeeById = async (req, res) => {
       where: { userId: Number(id) },
       include: {
         user: {
-          select: { id: true, username: true, email: true, systemRole: true },
+          select: { id: true, username: true, email: true },
         },
         skills: { include: { skill: true } },
         assignedTasks: { include: { project: true } },
@@ -141,8 +145,8 @@ export const updateEmployee = async (req, res) => {
       return res.status(404).json({ error: "Employee not found" });
     }
 
-    // Only allow users to update their own profile, or admins to update any profile
-    if (employee.userId !== req.user.id && req.user.systemRole !== "ADMIN") {
+    // Only allow users to update their own profile
+    if (employee.userId !== req.user.id) {
       return res
         .status(403)
         .json({ error: "Not authorized to update this employee profile" });
@@ -153,7 +157,7 @@ export const updateEmployee = async (req, res) => {
       data: { name, contact },
       include: {
         user: {
-          select: { id: true, username: true, email: true, systemRole: true },
+          select: { id: true, username: true, email: true },
         },
       },
     });
@@ -174,71 +178,9 @@ export const deleteEmployee = async (req, res) => {
   }
 };
 
-// Get Employee Availability and Workload
-export const getEmployeeAvailability = async (req, res) => {
-  try {
-    const { id } = req.params;
+// ------------------------------------------------------------------------------------------------------------
 
-    const employee = await prisma.employee.findUnique({
-      where: { id: parseInt(id) },
-      include: {
-        assignedTasks: {
-          where: {
-            status: { in: ["TODO", "IN_PROGRESS", "IN_REVIEW"] },
-          },
-          include: {
-            project: {
-              select: { title: true, priority: true, deadline: true },
-            },
-          },
-        },
-        user: {
-          select: { username: true, email: true },
-        },
-      },
-    });
-
-    if (!employee) {
-      return res.status(404).json({ error: "Employee not found" });
-    }
-
-    const activeTasks = employee.assignedTasks;
-    const totalEstimatedHours = activeTasks.reduce(
-      (sum, task) => sum + (task.estimatedHours || 0),
-      0
-    );
-
-    const workload = {
-      employeeId: employee.id,
-      name: employee.name,
-      availability: employee.availability,
-      maxTasks: employee.maxTasks,
-      currentWorkload: employee.currentWorkload,
-      activeTasksCount: activeTasks.length,
-      totalEstimatedHours,
-      status:
-        activeTasks.length === 0
-          ? "AVAILABLE"
-          : activeTasks.length <= employee.maxTasks * 0.6
-          ? "MODERATE"
-          : "BUSY",
-      tasks: activeTasks.map((task) => ({
-        id: task.id,
-        title: task.title,
-        status: task.status,
-        priority: task.priority,
-        project: task.project.title,
-        projectPriority: task.project.priority,
-        deadline: task.endDate,
-        estimatedHours: task.estimatedHours,
-      })),
-    };
-
-    res.json(workload);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+// Get Available Employees for Task Assignment
 
 // Get Available Employees for Task Assignment
 export const getAvailableEmployees = async (req, res) => {
@@ -247,12 +189,10 @@ export const getAvailableEmployees = async (req, res) => {
 
     const employees = await prisma.employee.findMany({
       where: {
-        availability: { in: ["AVAILABLE", "BUSY"] }, // Exclude ON_LEAVE
         ...(skillRequired && {
           skills: {
             some: {
               skill: { name: { contains: skillRequired, mode: "insensitive" } },
-              proficiency: { in: ["ADVANCED", "EXPERT"] },
             },
           },
         }),
@@ -277,7 +217,6 @@ export const getAvailableEmployees = async (req, res) => {
         id: employee.id,
         name: employee.name,
         contact: employee.contact,
-        availability: employee.availability,
         maxTasks: employee.maxTasks,
         currentWorkload: employee.currentWorkload,
         activeTasksCount: employee.assignedTasks.length,
@@ -285,8 +224,16 @@ export const getAvailableEmployees = async (req, res) => {
         isAvailable: employee.assignedTasks.length < employee.maxTasks,
         skills: employee.skills.map((s) => ({
           name: s.skill.name,
-          proficiency: s.proficiency,
           experience: s.yearsExperience,
+        })),
+        tasks: employee.assignedTasks.map((task) => ({
+          id: task.id,
+          title: task.title,
+          status: task.status,
+          priority: task.priority,
+          startDate: task.startDate,
+          endDate: task.endDate,
+          estimatedHours: task.estimatedHours,
         })),
       }))
       .filter((emp) => emp.isAvailable)
@@ -364,46 +311,7 @@ export const getTeamWorkload = async (req, res) => {
   }
 };
 
-// Update Employee Availability Status
-export const updateEmployeeAvailability = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { availability, maxTasks } = req.body;
-
-    // Check if user owns this employee record or is admin
-    const employee = await prisma.employee.findUnique({
-      where: { id: Number(id) },
-      include: { user: true },
-    });
-
-    if (!employee) {
-      return res.status(404).json({ error: "Employee not found" });
-    }
-
-    if (employee.userId !== req.user.id && req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({
-        error: "Not authorized to update this employee's availability",
-      });
-    }
-
-    const updatedEmployee = await prisma.employee.update({
-      where: { id: Number(id) },
-      data: {
-        ...(availability && { availability }),
-        ...(maxTasks && { maxTasks: Number(maxTasks) }),
-      },
-      include: {
-        user: {
-          select: { id: true, username: true, email: true, systemRole: true },
-        },
-      },
-    });
-
-    res.json(updatedEmployee);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+// ------------------------------------------------------------------------------------------------------------
 
 // Simple function to check if employee is booked or available
 export const isEmployeeBooked = async (req, res) => {
@@ -468,7 +376,8 @@ export const getAllEmployeesBookingStatus = async (req, res) => {
         isBooked: isBooked,
         status: isBooked ? "BOOKED" : "AVAILABLE",
         activeTasks: activeTasks,
-        availability: employee.availability,
+        maxTasks: employee.maxTasks,
+        capacityUsed: (activeTasks / employee.maxTasks) * 100,
         user: employee.user,
       };
     });

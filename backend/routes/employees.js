@@ -6,10 +6,8 @@ import {
   getEmployeeById,
   updateEmployee,
   deleteEmployee,
-  getEmployeeAvailability,
   getAvailableEmployees,
   getTeamWorkload,
-  updateEmployeeAvailability,
   isEmployeeBooked,
   getAllEmployeesBookingStatus,
 } from "../controllers/employeeController.js";
@@ -23,11 +21,9 @@ router.get("/", verifyToken, getAllEmployees);
 router.get("/booking-status", verifyToken, getAllEmployeesBookingStatus);
 router.get("/available", verifyToken, getAvailableEmployees);
 router.get("/workload", verifyToken, getTeamWorkload);
-router.get("/:id/availability", verifyToken, getEmployeeAvailability);
 router.get("/:id/booked", verifyToken, isEmployeeBooked);
 router.get("/:id", verifyToken, getEmployeeById);
 router.put("/:id", verifyToken, updateEmployee);
-router.put("/:id/availability", verifyToken, updateEmployeeAvailability);
 // Note: To delete an employee, delete the associated user via DELETE /api/users/:id
 // This will automatically cascade delete the employee record
 

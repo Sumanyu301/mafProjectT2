@@ -7,12 +7,11 @@ import {
   deleteProject,
 } from "../controllers/projectController.js";
 import { verifyToken } from "../middlewares/authMiddlewares.js";
-import { requireRole } from "../middlewares/roleMiddleware.js";
 
 const router = express.Router();
 
-// POST /projects - Create new project (Admin only)
-router.post("/", verifyToken, requireRole(['ADMIN']),createProject);
+// POST /projects - Create new project (anyone can create)
+router.post("/", verifyToken, createProject);
 
 // GET /projects - List all projects with filters
 router.get("/", verifyToken, getAllProjects);
@@ -20,10 +19,10 @@ router.get("/", verifyToken, getAllProjects);
 // GET /projects/:id - Get project details with employees, tasks, milestones
 router.get("/:id", verifyToken, getProjectById);
 
-// PUT /projects/:id - Update project (Admin only)
-router.put("/:id", verifyToken, requireRole(['ADMIN']), updateProject);
+// PUT /projects/:id - Update project (project owner only)
+router.put("/:id", verifyToken, updateProject);
 
-// DELETE /projects/:id - Delete project (Admin only)
-router.delete("/:id", verifyToken, requireRole(['ADMIN']), deleteProject);
+// DELETE /projects/:id - Delete project (project owner only)
+router.delete("/:id", verifyToken, deleteProject);
 
 export default router;
