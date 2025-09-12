@@ -15,7 +15,7 @@ export const verifyToken = (req, res, next) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    req.user = decoded; // Attach decoded payload (id, role, email)
+    req.user = decoded; // Attach decoded payload (id, email)
     next();
   });
 };
