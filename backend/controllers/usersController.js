@@ -16,11 +16,11 @@ export async function getUserById(req, res){
 // ------------------------------------------------------------------------------------------------------------
 
 export async function updateUserById(req, res){
-  const { email, systemRole } = req.body;
+  const { email } = req.body;
   try {
     const updated = await prisma.user.update({
       where: { id: parseInt(req.params.id) },
-      data: { email, systemRole },
+      data: { email },
     });
     res.json(updated);
   } catch (err) {

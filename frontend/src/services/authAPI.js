@@ -33,6 +33,6 @@ export const authAPI = {
     const res = await axios.get(`${API_URL}/api/auth/verify`, {
       withCredentials: true,
     });
-    return res.data; // {id, email, role}
+    return res.data; // {id, email}
   },
 };

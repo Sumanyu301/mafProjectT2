@@ -241,18 +241,19 @@ export async function deleteTask(req, res) {
   try {
     const { taskId } = req.params;
 
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
-    // Check if task exists
+    // Check if task exists and get the project to verify ownership
     const existingTask = await prisma.task.findUnique({
       where: { id: parseInt(taskId) },
+      include: { project: true },
     });
 
     if (!existingTask) {
       return res.status(404).json({ error: "Task not found" });
+    }
+
+    // Check if user is the project owner
+    if (existingTask.project.ownerId !== req.user.id) {
+      return res.status(403).json({ error: "Only project owner can delete tasks" });
     }
 
     // Delete the task

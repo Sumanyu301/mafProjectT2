@@ -1,14 +1,23 @@
 import prisma from "../prismaClient.js";
 
-// Assign employee(s) to project (Admin only)
+// Assign employee(s) to project (Project owner only)
 export async function assignEmployeesToProject(req, res) {
   try {
     const { id } = req.params; // project id
     const { employeeIds } = req.body; // array of employee IDs
 
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
+    // Check if project exists and user is the owner
+    const existingProject = await prisma.project.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!existingProject) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user is the project owner
+    if (existingProject.ownerId !== req.user.id) {
+      return res.status(403).json({ error: "Only project owner can assign employees" });
     }
 
     // Validate input
@@ -18,15 +27,6 @@ export async function assignEmployeesToProject(req, res) {
       employeeIds.length === 0
     ) {
       return res.status(400).json({ error: "employeeIds array is required" });
-    }
-
-    // Check if project exists
-    const existingProject = await prisma.project.findUnique({
-      where: { id: parseInt(id) },
-    });
-
-    if (!existingProject) {
-      return res.status(404).json({ error: "Project not found" });
     }
 
     // Verify all employees exist
@@ -130,23 +130,23 @@ export async function getProjectEmployees(req, res) {
   }
 }
 
-// Remove employee from project (Admin only)
+// Remove employee from project (Project owner only)
 export async function removeEmployeeFromProject(req, res) {
   try {
     const { id, employeeId } = req.params; // project id and employee id
 
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
-    // Check if project exists
+    // Check if project exists and user is the owner
     const existingProject = await prisma.project.findUnique({
       where: { id: parseInt(id) },
     });
 
     if (!existingProject) {
       return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user is the project owner
+    if (existingProject.ownerId !== req.user.id) {
+      return res.status(403).json({ error: "Only project owner can remove employees" });
     }
 
     // Check if employee exists
