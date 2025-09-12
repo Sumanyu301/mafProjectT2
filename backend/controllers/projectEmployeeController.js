@@ -107,7 +107,6 @@ export async function getProjectEmployees(req, res) {
             id: true,
             name: true,
             contact: true,
-            availability: true,
             maxTasks: true,
           },
         },
