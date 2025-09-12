@@ -253,7 +253,9 @@ export async function deleteTask(req, res) {
 
     // Check if user is the project owner
     if (existingTask.project.ownerId !== req.user.id) {
-      return res.status(403).json({ error: "Only project owner can delete tasks" });
+      return res
+        .status(403)
+        .json({ error: "Only project owner can delete tasks" });
     }
 
     // Delete the task

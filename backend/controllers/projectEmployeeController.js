@@ -17,7 +17,9 @@ export async function assignEmployeesToProject(req, res) {
 
     // Check if user is the project owner
     if (existingProject.ownerId !== req.user.id) {
-      return res.status(403).json({ error: "Only project owner can assign employees" });
+      return res
+        .status(403)
+        .json({ error: "Only project owner can assign employees" });
     }
 
     // Validate input
@@ -145,7 +147,9 @@ export async function removeEmployeeFromProject(req, res) {
 
     // Check if user is the project owner
     if (existingProject.ownerId !== req.user.id) {
-      return res.status(403).json({ error: "Only project owner can remove employees" });
+      return res
+        .status(403)
+        .json({ error: "Only project owner can remove employees" });
     }
 
     // Check if employee exists
