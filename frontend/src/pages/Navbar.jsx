@@ -44,7 +44,10 @@ function Navbar() {
 
   return (
     <nav className="flex justify-between items-center p-4 bg-blue-900 text-white">
-      <h1 className="text-lg font-bold">Project Management</h1>
+      <div className="flex justify-center">
+            <img src="src/assets/mafLogo-bgremoved.png" className="h-20 w-30 text-white" />
+            <h1 className="text-2xl pt-6 font-bold">Project Allocation Portal</h1>
+      </div>
       <div className="flex items-center space-x-3">
         {/* User Avatar / Initials */}
         <button

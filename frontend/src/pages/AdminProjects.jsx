@@ -69,13 +69,10 @@ const AdminProjects = () => {
 
         // Map backend structure and filter role at the same time
         const mapped = employees
-          .filter(emp => emp.user.systemRole === "EMPLOYEE") // ✅ filter by role
           .map((emp) => ({
             id: emp.id,
             name: emp.name,
             skills: emp.skills.map((s) => s.skill.name),
-            available: emp.availability === "AVAILABLE",
-            role: emp.user.systemRole, // save role if needed
           }));
 
         setAllEmployees(mapped);
@@ -314,13 +311,13 @@ const AdminProjects = () => {
                     <p className="text-sm text-gray-600 mb-1">
                       Skills: {emp.skills.join(", ")}
                     </p>
-                    <p
+                    {/* <p
                       className={`text-sm font-medium ${
                         emp.available ? "text-green-600" : "text-red-600"
                       }`}
                     >
                       {emp.available ? "✓ Available" : "✗ Busy"}
-                    </p>
+                    </p> */}
                   </div>
                   {selectedEmployees.includes(emp.id) && (
                     <div className="bg-blue-900 text-white rounded-full w-6 h-6 flex items-center justify-center">
