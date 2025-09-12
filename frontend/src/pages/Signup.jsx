@@ -1,7 +1,18 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import AuthForm from "../components/AuthForm";
-import { ArrowLeft, CheckCircle, Users, Shield, Zap } from "lucide-react";
+import { 
+  ArrowLeft, 
+  CheckCircle, 
+  Users, 
+  Shield, 
+  Zap, 
+  UserCheck, 
+  BarChart, 
+  ClipboardList, 
+  Clock 
+} from "lucide-react";
+
 
 import { authAPI } from "../services/authAPI";
 
@@ -31,14 +42,14 @@ const handleSignup = async (data) => {
   }
 };
 
-  const features = [
-    { icon: Users, text: "Join our growing community" },
-    { icon: Shield, text: "Enterprise-grade security" },
-    { icon: Zap, text: "Lightning-fast performance" },
-  ];
+  // const features = [
+  //   { icon: Users, text: "Join our growing community" },
+  //   { icon: Shield, text: "Enterprise-grade security" },
+  //   { icon: Zap, text: "Lightning-fast performance" },
+  // ];
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-20 w-32 h-32 bg-blue-50 rounded-full opacity-60"></div>
@@ -46,52 +57,73 @@ const handleSignup = async (data) => {
         <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-blue-100 rounded-full opacity-40"></div>
       </div>
 
-      <div className="relative z-10 flex flex-col lg:flex-row min-h-screen">
+      <div className="relative z-10 p-10 bg-gray-50 flex flex-col lg:flex-row min-h-screen">
         {/* Left side - Features */}
-        <div className="lg:w-1/2 flex flex-col justify-center p-8 lg:p-16 bg-gray-50">
-          <div className="max-w-lg mx-auto lg:mx-0">
-            <h1 className="text-4xl lg:text-6xl font-bold text-blue-900 mb-6 leading-tight">
-              Join the
-              <span className="text-red-600"> Future</span>
-            </h1>
+<div className="lg:w-1/2 flex flex-col justify-center p-12 lg:p-16 bg-gray-50">
+  <div className="max-w-lg mx-auto lg:mx-0 text-4xl lg:text-6xl">
+    <h1 className="text-4xl lg:text-6xl font-bold text-blue-900 mb-6 leading-tight">
+      MAF
+      <span className="text-red-600"> Project Allocation</span>
+    </h1>
 
-            <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-              Create your account today and unlock a world of possibilities.
-              Experience innovation like never before.
-            </p>
+    <p className="text-xl text-gray-700 mb-8 leading-relaxed">
+      Sign up today to streamline team management, optimize workloads,
+      and ensure the right people work on the right projects.
+    </p>
 
-            {/* Feature list */}
-            <div className="space-y-4 mb-8">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-center space-x-3 text-gray-700">
-                  <div className="bg-blue-900 p-2 rounded-lg">
-                    <feature.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <span className="text-lg font-medium">{feature.text}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 lg:gap-8">
-              <div className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold text-blue-900">50K+</div>
-                <div className="text-sm text-gray-600">Active Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold text-blue-900">99.9%</div>
-                <div className="text-sm text-gray-600">Uptime</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold text-blue-900">24/7</div>
-                <div className="text-sm text-gray-600">Support</div>
-              </div>
-            </div>
+    {/* Feature list */}
+    <div className="space-y-4 mb-8">
+      {[
+        {
+          icon: UserCheck,
+          text: "Skill-based Employee Allocation",
+        },
+        // {
+        //   icon: BarChart,
+        //   text: "Track Workload & Availability",
+        // },
+        {
+          icon: ClipboardList,
+          text: "Simplified Project Assignments",
+        },
+        {
+          icon: Clock,
+          text: "Real-time Monitoring & Updates",
+        },
+      ].map((feature, index) => (
+        <div
+          key={index}
+          className="flex items-center space-x-3 text-gray-700"
+        >
+          <div className="bg-blue-900 p-2 rounded-lg">
+            <feature.icon className="h-5 w-5 text-white" />
           </div>
+          <span className="text-lg font-medium">{feature.text}</span>
         </div>
+      ))}
+    </div>
+
+    {/* Stats */}
+    {/* <div className="grid grid-cols-3 gap-4 lg:gap-8">
+      <div className="text-center">
+        <div className="text-2xl lg:text-3xl font-bold text-blue-900">500+</div>
+        <div className="text-sm text-gray-600">Projects Managed</div>
+      </div>
+      <div className="text-center">
+        <div className="text-2xl lg:text-3xl font-bold text-blue-900">99%</div>
+        <div className="text-sm text-gray-600">Allocation Accuracy</div>
+      </div>
+      <div className="text-center">
+        <div className="text-2xl lg:text-3xl font-bold text-blue-900">100+</div>
+        <div className="text-sm text-gray-600">Active Employees</div>
+      </div>
+    </div> */}
+  </div>
+</div>
+
 
         {/* Right side - Auth form */}
-        <div className="lg:w-1/2 flex flex-col items-center justify-center p-4 lg:p-8 bg-white">
+        <div className="lg:w-1/2 flex flex-col items-center justify-center p-4 lg:p-8 bg-gray-50">
           <AuthForm
             title="Signup"
             onSubmit={handleSignup}
@@ -122,7 +154,7 @@ const handleSignup = async (data) => {
             </div>
 
             {/* Footer links */}
-            <div className="flex items-center justify-center space-x-6 mt-6 text-sm">
+            {/* <div className="flex items-center justify-center space-x-6 mt-6 text-sm">
               <button className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
                 Privacy Policy
               </button>
@@ -134,7 +166,7 @@ const handleSignup = async (data) => {
               <button className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
                 Help
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
