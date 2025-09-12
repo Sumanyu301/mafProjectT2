@@ -48,7 +48,6 @@ export const assignSkillToEmployee = async (req, res) => {
     const {
       employeeId: employeeIdFromBody,
       skillId,
-      proficiencyLevel,
       yearsOfExperience,
     } = req.body;
 
@@ -115,7 +114,6 @@ export const assignSkillToEmployee = async (req, res) => {
       data: {
         employeeId: employeeIdNumber,
         skillId: skillIdNumber,
-        proficiency: proficiencyLevel,
         yearsExperience: Number(yearsOfExperience),
       },
       include: {

@@ -1,11 +1,18 @@
 import prisma from "../prismaClient.js";
 
-// Create a new project (Admin only)
+// Create a new project (anyone can create and become owner)
 export async function createProject(req, res) {
   try {
-    const { title, description, priority, startDate, deadline, employees = [] } = req.body;
+    const {
+      title,
+      description,
+      priority,
+      startDate,
+      deadline,
+      employees = [],
+    } = req.body;
 
-    // Get employee profile for the admin user
+    // Get employee profile for the user
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       include: { employee: true },
@@ -37,21 +44,37 @@ export async function createProject(req, res) {
         startDate: parsedStartDate,
         deadline: parsedDeadline,
         createdBy: user.employee.id,
+        ownerId: user.employee.id, // Creator becomes the owner
         status: "PLANNING",
         members: {
           create: employees.map((empId) => ({
-            employee: { connect: { id: empId } },
+            employeeId: empId,
           })),
-        },
-      },
-      include: {
-        creator: {
-          select: { id: true, name: true, contact: true },
         },
       },
     });
 
-    res.status(201).json(project);
+    // Fetch the created project with relations
+    const projectWithRelations = await prisma.project.findUnique({
+      where: { id: project.id },
+      include: {
+        creator: {
+          select: { id: true, name: true, contact: true },
+        },
+        owner: {
+          select: { id: true, name: true, contact: true },
+        },
+        members: {
+          include: {
+            employee: {
+              select: { id: true, name: true, contact: true },
+            },
+          },
+        },
+      },
+    });
+
+    res.status(201).json(projectWithRelations);
   } catch (error) {
     console.error("Error creating project:", error);
     res.status(500).json({ error: error.message });
@@ -74,6 +97,9 @@ export async function getAllProjects(req, res) {
       where: whereClause,
       include: {
         creator: {
+          select: { id: true, name: true, contact: true },
+        },
+        owner: {
           select: { id: true, name: true, contact: true },
         },
         members: {
@@ -177,6 +203,7 @@ export async function getProjectById(req, res) {
       where: { id: parseInt(id) },
       include: {
         creator: { select: { id: true, name: true, contact: true } },
+        owner: { select: { id: true, name: true, contact: true } },
         members: {
           include: {
             employee: {
@@ -218,15 +245,31 @@ export async function getProjectById(req, res) {
   }
 }
 
-
-// Update a project (Admin only)
+// Update a project (project owner only)
 export async function updateProject(req, res) {
   try {
     const { id } = req.params;
-    const { title, description, priority, status, startDate, deadline, employees } =
-      req.body; // employees = array of employee IDs
+    const {
+      title,
+      description,
+      priority,
+      status,
+      startDate,
+      deadline,
+      employees,
+    } = req.body; // employees = array of employee IDs
 
-    // Check if project exists
+    // Get the user's employee profile
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { employee: true },
+    });
+
+    if (!user?.employee) {
+      return res.status(400).json({ error: "User must have employee profile" });
+    }
+
+    // Check if project exists and user is the owner
     const existingProject = await prisma.project.findUnique({
       where: { id: parseInt(id) },
       include: { members: true },
@@ -234,6 +277,13 @@ export async function updateProject(req, res) {
 
     if (!existingProject) {
       return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user is the project owner
+    if (existingProject.ownerId !== user.employee.id) {
+      return res
+        .status(403)
+        .json({ error: "Only project owner can update the project" });
     }
 
     // Prepare update data
@@ -265,6 +315,9 @@ export async function updateProject(req, res) {
       data: updateData,
       include: {
         creator: {
+          select: { id: true, name: true, contact: true },
+        },
+        owner: {
           select: { id: true, name: true, contact: true },
         },
         members: {
@@ -303,6 +356,9 @@ export async function updateProject(req, res) {
         creator: {
           select: { id: true, name: true, contact: true },
         },
+        owner: {
+          select: { id: true, name: true, contact: true },
+        },
         members: {
           include: {
             employee: {
@@ -320,14 +376,22 @@ export async function updateProject(req, res) {
   }
 }
 
-
-
 // ------------------------------------------------------------------------------------------------------------
 
-// Delete a project (Admin only)
+// Delete a project (project owner only)
 export async function deleteProject(req, res) {
   try {
     const { id } = req.params;
+
+    // Get the user's employee profile
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { employee: true },
+    });
+
+    if (!user?.employee) {
+      return res.status(400).json({ error: "User must have employee profile" });
+    }
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
@@ -336,6 +400,13 @@ export async function deleteProject(req, res) {
 
     if (!existingProject) {
       return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user is the project owner
+    if (existingProject.ownerId !== user.employee.id) {
+      return res
+        .status(403)
+        .json({ error: "Only project owner can delete the project" });
     }
 
     // Delete the project

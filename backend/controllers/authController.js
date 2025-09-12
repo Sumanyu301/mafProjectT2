@@ -26,7 +26,6 @@ export async function signUp(req, res) {
           username,
           email,
           passwordHash: hashedPassword,
-          systemRole: "EMPLOYEE", // default role
         },
       });
 
@@ -36,7 +35,6 @@ export async function signUp(req, res) {
           userId: newUser.id,
           name: name || username, // Use provided name or fallback to username
           contact: contact || email, // Use provided contact or fallback to email
-          availability: "AVAILABLE",
           maxTasks: 5, // default capacity
           currentWorkload: 0,
         },
@@ -83,11 +81,9 @@ export async function loginUser(req, res) {
       data: { lastLogin: new Date() },
     });
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email, systemRole: user.systemRole },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
     // Send token in HTTP-only cookie
     res.cookie("token", token, {
@@ -127,7 +123,6 @@ export async function verifyUser(req, res) {
       message: "Protected data",
       id: decoded.id,
       email: decoded.email,
-      role: decoded.systemRole
     });
   });
 }

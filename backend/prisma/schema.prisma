@@ -8,31 +8,30 @@ datasource db {
 }
 
 model User {
-  id           Int        @id @default(autoincrement())
-  username     String     @unique
-  email        String     @unique
-  passwordHash String     @map("password_hash")
-  systemRole   SystemRole @default(EMPLOYEE) @map("system_role")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  lastLogin    DateTime?  @map("last_login")
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  lastLogin    DateTime? @map("last_login")
   employee     Employee?
 
   @@map("users")
 }
 
 model Employee {
-  id              Int               @id @default(autoincrement())
-  userId          Int               @unique @map("user_id")
+  id              Int    @id @default(autoincrement())
+  userId          Int    @unique @map("user_id")
   name            String
   contact         String
-  availability    AvailabilityStatus @default(AVAILABLE)
-  maxTasks        Int               @default(5) @map("max_tasks")
-  currentWorkload Float             @default(0) @map("current_workload")
-  
+  maxTasks        Int    @default(5) @map("max_tasks")
+  currentWorkload Float  @default(0) @map("current_workload")
+
   // Relations
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   skills          EmployeeSkill[]
   createdProjects Project[]         @relation("ProjectCreator")
+  ownedProjects   Project[]         @relation("ProjectOwner")
   projectMembers  ProjectEmployee[]
   assignedTasks   Task[]
 
@@ -48,12 +47,11 @@ model Skill {
 }
 
 model EmployeeSkill {
-  employeeId      Int              @map("employee_id")
-  skillId         Int              @map("skill_id")
-  proficiency     ProficiencyLevel
-  yearsExperience Int              @map("years_experience")
-  employee        Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  skill           Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  employeeId      Int      @map("employee_id")
+  skillId         Int      @map("skill_id")
+  yearsExperience Int      @map("years_experience")
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  skill           Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   @@id([employeeId, skillId])
   @@map("employee_skills")
@@ -62,6 +60,7 @@ model EmployeeSkill {
 model Project {
   id          Int               @id @default(autoincrement())
   createdBy   Int               @map("created_by")
+  ownerId     Int               @map("owner_id")
   title       String
   description String
   priority    Priority
@@ -73,6 +72,7 @@ model Project {
   milestones  Milestone[]
   members     ProjectEmployee[]
   creator     Employee          @relation("ProjectCreator", fields: [createdBy], references: [id])
+  owner       Employee          @relation("ProjectOwner", fields: [ownerId], references: [id])
   tasks       Task[]
 
   @@map("projects")
@@ -90,23 +90,23 @@ model ProjectEmployee {
 }
 
 model Task {
-  id              Int        @id @default(autoincrement())
-  projectId       Int        @map("project_id")
-  employeeId      Int?       @map("employee_id")
-  title           String
-  description     String?
-  status          TaskStatus @default(TODO)
-  priority        Priority   @default(MEDIUM)
-  estimatedHours  Float?     @map("estimated_hours")
-  actualHours     Float?     @map("actual_hours")
-  startDate       DateTime?  @map("start_date")
-  endDate         DateTime?  @map("end_date")
-  createdAt       DateTime   @default(now()) @map("created_at")
-  updatedAt       DateTime   @updatedAt @map("updated_at")
-  
+  id             Int        @id @default(autoincrement())
+  projectId      Int        @map("project_id")
+  employeeId     Int?       @map("employee_id")
+  title          String
+  description    String?
+  status         TaskStatus @default(TODO)
+  priority       Priority   @default(MEDIUM)
+  estimatedHours Float?     @map("estimated_hours")
+  actualHours    Float?     @map("actual_hours")
+  startDate      DateTime?  @map("start_date")
+  endDate        DateTime?  @map("end_date")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
   // Relations
-  assignedTo      Employee?  @relation(fields: [employeeId], references: [id])
-  project         Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedTo Employee? @relation(fields: [employeeId], references: [id])
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("tasks")
 }
@@ -121,22 +121,6 @@ model Milestone {
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("milestones")
-}
-
-enum SystemRole {
-  ADMIN
-  EMPLOYEE
-
-  @@map("system_role")
-}
-
-enum ProficiencyLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-  EXPERT
-
-  @@map("proficiency_level")
 }
 
 enum Priority {
@@ -166,13 +150,4 @@ enum TaskStatus {
   BLOCKED
 
   @@map("task_status")
-}
-
-enum AvailabilityStatus {
-  AVAILABLE
-  BUSY
-  OVERLOADED
-  ON_LEAVE
-
-  @@map("availability_status")
 }
