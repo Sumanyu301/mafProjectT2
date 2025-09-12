@@ -6,9 +6,23 @@ export async function assignEmployeesToProject(req, res) {
     const { id } = req.params; // project id
     const { employeeIds } = req.body; // array of employee IDs
 
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
+    // Check if project exists and user is the owner
+    const existingProject = await prisma.project.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!existingProject) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user is the project owner
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { employee: true },
+    });
+
+    if (existingProject.ownerId !== user.employee.id) {
+      return res.status(403).json({ error: "Only project owner can assign employees" });
     }
 
     // Validate input
@@ -18,15 +32,6 @@ export async function assignEmployeesToProject(req, res) {
       employeeIds.length === 0
     ) {
       return res.status(400).json({ error: "employeeIds array is required" });
-    }
-
-    // Check if project exists
-    const existingProject = await prisma.project.findUnique({
-      where: { id: parseInt(id) },
-    });
-
-    if (!existingProject) {
-      return res.status(404).json({ error: "Project not found" });
     }
 
     // Verify all employees exist
@@ -135,18 +140,23 @@ export async function removeEmployeeFromProject(req, res) {
   try {
     const { id, employeeId } = req.params; // project id and employee id
 
-    // Check if user is admin
-    if (req.user.systemRole !== "ADMIN") {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-
-    // Check if project exists
+    // Check if project exists and user is the owner
     const existingProject = await prisma.project.findUnique({
       where: { id: parseInt(id) },
     });
 
     if (!existingProject) {
       return res.status(404).json({ error: "Project not found" });
+    }
+
+    // Check if user is the project owner
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { employee: true },
+    });
+
+    if (existingProject.ownerId !== user.employee.id) {
+      return res.status(403).json({ error: "Only project owner can remove employees" });
     }
 
     // Check if employee exists
