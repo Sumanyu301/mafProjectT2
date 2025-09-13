@@ -169,11 +169,15 @@ export const updateEmployee = async (req, res) => {
     });
 
     // Handle skills removal
-    if (removeSkills && Array.isArray(removeSkills) && removeSkills.length > 0) {
+    if (
+      removeSkills &&
+      Array.isArray(removeSkills) &&
+      removeSkills.length > 0
+    ) {
       await prisma.employeeSkill.deleteMany({
-        where: { 
+        where: {
           employeeId: Number(id),
-          skillId: { in: removeSkills.map(id => Number(id)) }
+          skillId: { in: removeSkills.map((id) => Number(id)) },
         },
       });
     }
@@ -182,7 +186,7 @@ export const updateEmployee = async (req, res) => {
     if (addSkills && Array.isArray(addSkills) && addSkills.length > 0) {
       for (const skillUpdate of addSkills) {
         const { skillId, yearsOfExperience } = skillUpdate;
-        
+
         // Verify skill exists
         const skillExists = await prisma.skill.findUnique({
           where: { id: Number(skillId) },
@@ -194,9 +198,9 @@ export const updateEmployee = async (req, res) => {
             where: {
               employeeId_skillId: {
                 employeeId: Number(id),
-                skillId: Number(skillId)
-              }
-            }
+                skillId: Number(skillId),
+              },
+            },
           });
 
           if (!existingSkill) {
@@ -241,36 +245,56 @@ export const getMyProfile = async (req, res) => {
         user: {
           select: { id: true, username: true, email: true },
         },
-        skills: { 
-          include: { 
-            skill: { 
-              select: { id: true, name: true } 
-            } 
-          } 
+        skills: {
+          include: {
+            skill: {
+              select: { id: true, name: true },
+            },
+          },
         },
-        assignedTasks: { 
-          include: { 
-            project: { 
-              select: { id: true, title: true, status: true }
-            } 
+        assignedTasks: {
+          include: {
+            project: {
+              select: { id: true, title: true, status: true },
+            },
           },
           where: {
-            status: { not: "COMPLETED" }
-          }
+            status: { not: "COMPLETED" },
+          },
         },
-        projectMembers: { 
-          include: { 
-            project: { 
-              select: { id: true, title: true, status: true, ownerId: true }
-            } 
-          } 
+        projectMembers: {
+          select: {
+            joinedAt: true,
+            project: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                status: true,
+                deadline: true,
+                ownerId: true,
+              },
+            },
+          },
         },
         createdProjects: {
-          select: { id: true, title: true, status: true }
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            deadline: true,
+          },
         },
         ownedProjects: {
-          select: { id: true, title: true, status: true }
-        }
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            deadline: true,
+          },
+        },
       },
     });
 
@@ -280,14 +304,14 @@ export const getMyProfile = async (req, res) => {
 
     // Calculate statistics
     const totalTasks = await prisma.task.count({
-      where: { employeeId: employee.id }
+      where: { employeeId: employee.id },
     });
 
     const completedTasks = await prisma.task.count({
-      where: { 
+      where: {
         employeeId: employee.id,
-        status: "COMPLETED"
-      }
+        status: "COMPLETED",
+      },
     });
 
     const ownedProjectsCount = employee.ownedProjects.length;
@@ -301,8 +325,8 @@ export const getMyProfile = async (req, res) => {
         completedTasks,
         ownedProjects: ownedProjectsCount,
         memberProjects: memberProjectsCount,
-        totalProjects: ownedProjectsCount + memberProjectsCount
-      }
+        totalProjects: ownedProjectsCount + memberProjectsCount,
+      },
     };
 
     res.json(profileData);
