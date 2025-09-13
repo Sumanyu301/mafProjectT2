@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { employeeAPI } from "../services/employeeAPI";
+
+// import EmployeeSkeleton from "../components/EmployeeSkeleton"; 
 import { authAPI } from "../services/authAPI";
 import { ProfileSkeleton, SkillsSkeleton, ProjectsSkeleton } from "../components/skeletons";
+
 
 export default function EmployeeProfile() {
   const { id } = useParams();

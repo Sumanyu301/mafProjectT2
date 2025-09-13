@@ -11,28 +11,31 @@ import {
   CheckCircle,
   AlertCircle
 } from "lucide-react";
-import { authAPI } from "../services/authAPI";
+// import { authAPI } from "../services/authAPI";
 import { projectAPI } from "../services/projectAPI";
+import toast from "react-hot-toast";
+import { SuccessToast, ErrorToast, ConfirmToast } from "../components/CustomToasts";
+import ProjectDetailsSkeleton from "../components/ProjectDetailsSkeleton";
 
 function ProjectDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
-  const [userRole, setUserRole] = useState(""); 
+  // const [userRole, setUserRole] = useState(""); 
   const [loading, setLoading] = useState(true);
 
   // ✅ Get logged-in user role
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const data = await authAPI.verify();
-        setUserRole(data.role); // "ADMIN" or "EMPLOYEE"
-      } catch (err) {
-        console.error("Failed to verify user:", err);
-      }
-    };
-    fetchUser();
-  }, []);
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const data = await authAPI.verify();
+  //       setUserRole(data.role); // "ADMIN" or "EMPLOYEE"
+  //     } catch (err) {
+  //       console.error("Failed to verify user:", err);
+  //     }
+  //   };
+  //   fetchUser();
+  // }, []);
 
   // ✅ Load project details
   useEffect(() => {
@@ -77,33 +80,51 @@ function ProjectDetailsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this project?")) {
-      return;
-    }
-
-    try {
-      setIsDeleting(true);
-      await projectAPI.delete(id); // ✅ call API
-      alert("Project deleted successfully!");
-      navigate("/"); // go back to projects list
-    } catch (err) {
-      console.error("❌ Error deleting project:", err);
-      alert(err.response?.data?.error || "Failed to delete project");
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  toast.custom(
+    (t) => (
+      <ConfirmToast
+        title="Delete Project?"
+        message="Are you sure you want to delete this project? This action cannot be undone."
+        onConfirm={async () => {
+          toast.dismiss(t.id); // close confirm toast
+          try {
+            setIsDeleting(true);
+            await projectAPI.delete(id); // call API
+            toast.custom(
+              <SuccessToast
+                title="Project Deleted!"
+                message="The project was removed successfully."
+              />,
+              { position: "top-center", duration: 3000 }
+            );
+            navigate("/"); // go back to projects list
+          } catch (err) {
+            console.error("❌ Error deleting project:", err);
+            toast.custom(
+              <ErrorToast
+                title="Delete Failed"
+                message={err.response?.data?.error || "Failed to delete project"}
+              />,
+              { position: "top-center", duration: 3500 }
+            );
+          } finally {
+            setIsDeleting(false);
+          }
+        }}
+        onCancel={() => toast.dismiss(t.id)}
+      />
+    ),
+    { position: "top-center", duration: 5000 }
+  );
+};
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-900 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-700 text-lg">Loading project details...</p>
-        </div>
-      </div>
-    );
-  }
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+      <ProjectDetailsSkeleton />
+    </div>
+  );
+}
 
   if (!project) {
     return (
@@ -216,11 +237,11 @@ function ProjectDetailsPage() {
                       <p className="text-sm text-gray-600">{emp.task}</p>
                     </div>
                   </div>
-                  {emp.status === "Completed" ? (
+                  {/* {emp.status === "Completed" ? (
                     <CheckCircle className="h-5 w-5 text-green-600" />
                   ) : (
                     <AlertCircle className="h-5 w-5 text-yellow-600" />
-                  )}
+                  )} */}
                 </div>
               ))}
             </div>
@@ -230,7 +251,7 @@ function ProjectDetailsPage() {
         </div>
 
         {/* Admin Actions */}
-        {userRole === "ADMIN" && (
+        {/* {userRole === "ADMIN" && ( */}
           <div className="mt-8 bg-white rounded-lg shadow-lg p-6 border border-gray-200">
             <h3 className="text-lg font-semibold text-blue-900 mb-4">Admin Actions</h3>
             <div className="flex flex-wrap gap-4">
@@ -256,7 +277,7 @@ function ProjectDetailsPage() {
 
             </div>
           </div>
-        )}
+        {/* )} */}
       </div>
     </div>
   );

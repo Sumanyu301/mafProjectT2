@@ -1,13 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";  
 import AdminProjects from "./pages/AdminProjects";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetailsPage from "./pages/ProjectDetailsPage"; 
-
 import ProtectedRoute from "./pages/ProtectedRoute";
 import Layout from "./pages/Layout";
-
 import EmployeeProfile from "./pages/EmployeeProfile";
 
 function App() {
@@ -43,13 +43,28 @@ function App() {
             } 
           />
           <Route path="/" element={<ProjectsPage />} />
-        </Route>
-        
-        <Route path="/projects/:id" element={<ProjectDetailsPage />} />
+          <Route path="/projects/:id" element={<ProjectDetailsPage />} />
 
         <Route path="/profile" element={<EmployeeProfile />} />
+        </Route>
+        
+        {/* <Route path="/projects/:id" element={<ProjectDetailsPage />} />
 
+        <Route path="/profile" element={<EmployeeProfile />} /> */}
       </Routes>
+
+      {/* ✅ Global Toast Notifications */}
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          success: {
+            style: { background: "#4ade80", color: "#fff" }, // green
+          },
+          error: {
+            style: { background: "#ef4444", color: "#fff" }, // red
+          },
+        }}
+      />
     </Router>
   );
 }

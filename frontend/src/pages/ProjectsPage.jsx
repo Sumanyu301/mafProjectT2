@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FolderOpen, ArrowRight, Clock, Users } from "lucide-react";
 
 import { projectAPI } from "../services/projectAPI";
+import ProjectSkeleton from "../components/ProjectSkeleton";
 
 function ProjectsPage() {
   const [projects, setProjects] = useState([]);
@@ -46,15 +47,16 @@ function ProjectsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-900 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-700 text-lg">Loading projects...</p>
-        </div>
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, idx) => (
+          <ProjectSkeleton key={idx} />
+        ))}
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gray-50">
