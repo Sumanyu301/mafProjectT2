@@ -90,7 +90,7 @@ export async function loginUser(req, res) {
       httpOnly: true,
       secure: true, // use true in production (HTTPS)
       sameSite: "None", // allow cross-site cookies (Vercel + Render setup)
-      maxAge: 3600000, // 1 hour
+      maxAge: 1000 * 60 * 60 * 6, // 6 hours
     });
 
     res.status(200).json({ message: "Login successful" });

@@ -1,32 +1,49 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { 
-  Pencil, 
-  Users, 
-  Calendar, 
-  Clock, 
-  ArrowLeft, 
-  Trash2, 
+import { useState, useEffect, useRef, useMemo } from "react";
+import {
+  Pencil,
+  Users,
+  Calendar,
+  Clock,
+  ArrowLeft,
+  Trash2,
   Target,
-  CheckCircle,
-  AlertCircle
 } from "lucide-react";
 import { authAPI } from "../services/authAPI";
 import { projectAPI } from "../services/projectAPI";
+import { taskAPI } from "../services/taskAPI";
+import { employeeAPI } from "../services/employeeAPI";
+// import { projectEmpAPI } from "../services/projectEmpAPI";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 function ProjectDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [project, setProject] = useState(null);
-  const [userRole, setUserRole] = useState(""); 
   const [loading, setLoading] = useState(true);
 
-  // ✅ Get logged-in user role
+  // Kanban-related
+  const [tasks, setTasks] = useState([]);
+  const [taskLoading, setTaskLoading] = useState(false);
+
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [editTask, setEditTask] = useState(null); // object or null
+
+  const [allEmployees, setAllEmployees] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const searchInputRef = useRef(null);
+
+  const [userId, setUserId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [saveTaskLoading, setSaveTaskLoading] = useState(false);
+  const [isDeletingTask, setIsDeletingTask] = useState(false);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const data = await authAPI.verify();
-        setUserRole(data.role); // "ADMIN" or "EMPLOYEE"
+        setUserId(data.id);
       } catch (err) {
         console.error("Failed to verify user:", err);
       }
@@ -34,7 +51,7 @@ function ProjectDetailsPage() {
     fetchUser();
   }, []);
 
-  // ✅ Load project details
+  // Load project
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -49,46 +66,276 @@ function ProjectDetailsPage() {
     fetchProject();
   }, [id]);
 
+  const isCreator = Boolean(
+    project && project.creator && project.creator.id === userId
+  );
+
+  // Load tasks for project
+  useEffect(() => {
+    if (!project?.id) return;
+    const fetchTasks = async () => {
+      setTaskLoading(true);
+      try {
+        const data = await taskAPI.getProjectTasks(project.id);
+        // normalize employeeId -> assigneeId for UI (keep UI using assigneeId)
+        const normalized = data.map((t) => ({
+          ...t,
+          // backend uses employeeId field; map it into UI's assigneeId
+          assigneeId:
+            t.employeeId === null || t.employeeId === undefined
+              ? ""
+              : Number(t.employeeId),
+        }));
+        setTasks(normalized);
+      } catch (err) {
+        console.error("Failed to load tasks", err);
+        setTasks([]);
+      } finally {
+        setTaskLoading(false);
+      }
+    };
+    fetchTasks();
+  }, [project?.id]);
+
+  // derive progress from tasks only (do not overwrite project)
+  const derivedProgress = useMemo(() => {
+    const total = tasks.length;
+    if (total === 0) return 0;
+    const completed = tasks.filter(
+      (t) =>
+        String(t.status).toUpperCase() === "COMPLETED" ||
+        String(t.status).toUpperCase() === "DONE"
+    ).length;
+    return Math.round((completed / total) * 100);
+  }, [tasks]);
+
+  // Fetch all employees when modal opens (owner only)
+  useEffect(() => {
+    if (showTaskModal && isCreator) {
+      employeeAPI
+        .getAll()
+        .then((res) => {
+          setAllEmployees(res || []);
+        })
+        .catch(() => setAllEmployees([]));
+    }
+  }, [showTaskModal, isCreator]);
+
+  const statusColumns = [
+    { id: "TODO", label: "To Do" },
+    { id: "IN_PROGRESS", label: "In Progress" },
+    { id: "IN_REVIEW", label: "In Review" },
+    { id: "COMPLETED", label: "Completed" },
+    { id: "BLOCKED", label: "Blocked" },
+  ];
+
+  const tasksByStatus = {};
+  statusColumns.forEach((col) => {
+    tasksByStatus[col.id] = tasks.filter((t) => String(t.status) === String(col.id));
+  });
+
+  // Helpers for colors
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Completed": return "bg-green-100 text-green-800 border-green-200";
-      case "In Progress": return "bg-blue-100 text-blue-800 border-blue-200";
-      case "Planning": return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      default: return "bg-gray-100 text-gray-800 border-gray-200";
+    switch (String(status).toUpperCase()) {
+      case "COMPLETED":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "IN_PROGRESS":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "TODO":
+      case "PLANNING":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
   const getPriorityColor = (priority) => {
-    switch (priority) {
-      case "High": return "bg-red-100 text-red-800 border-red-200";
-      case "Medium": return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Low": return "bg-green-100 text-green-800 border-green-200";
-      default: return "bg-gray-100 text-gray-800 border-gray-200";
+    switch (String(priority).toUpperCase()) {
+      case "HIGH":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "MEDIUM":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "LOW":
+        return "bg-green-100 text-green-800 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
   const getProgressColor = (progress) => {
+    if (progress === 0) return "bg-white border border-gray-300"; // White bar with border
     if (progress >= 80) return "bg-green-500";
     if (progress >= 50) return "bg-blue-600";
     if (progress >= 25) return "bg-yellow-500";
-    return "bg-red-500";
+    return "bg-white border border-gray-300";
   };
 
-  const [isDeleting, setIsDeleting] = useState(false);
-  
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this project?")) {
-      return;
+  // open modal to add task (blank template)
+  const handleAddTaskClick = () => {
+    setEditTask({
+      title: "",
+      priority: "MEDIUM",
+      status: "TODO",
+      assigneeId: "", // empty string denotes unassigned in UI
+    });
+    setShowTaskModal(true);
+  };
+
+  // open modal to edit existing task (values retained)
+  const handleEditTask = (task) => {
+    setEditTask({
+      ...task,
+      // make sure we read backend's employeeId if present
+      assigneeId:
+        task.assigneeId !== undefined
+          ? task.assigneeId
+          : task.employeeId === null || task.employeeId === undefined
+          ? ""
+          : Number(task.employeeId),
+    });
+    setShowTaskModal(true);
+  };
+
+  // assign/unassign in modal (local to editTask)
+  const handleAssignMember = (empId) => {
+    // empId may be number or "", keep normalized
+    setEditTask((prev) => ({
+      ...prev,
+      assigneeId: empId === "" ? "" : Number(empId),
+    }));
+  };
+
+  // Delete task (owner only)
+  const handleDeleteTask = async (taskId) => {
+    if (!taskId) return;
+    if (!window.confirm("Delete this task?")) return;
+    try {
+      setIsDeletingTask(true);
+      await taskAPI.deleteTask(taskId);
+      setTasks((prev) => prev.filter((t) => Number(t.id) !== Number(taskId)));
+      // if modal open for same task, close it
+      if (editTask && Number(editTask.id) === Number(taskId)) {
+        setShowTaskModal(false);
+        setEditTask(null);
+      }
+    } catch (err) {
+      console.error("Failed to delete task", err);
+      alert("Failed to delete task");
+    } finally {
+      setIsDeletingTask(false);
     }
+  };
+
+  // ...existing code...
+  const handleSaveTask = async (e) => {
+    e.preventDefault();
+    setSaveTaskLoading(true);
+    if (!editTask || !editTask.title) return;
+
+    const payload = {
+      title: editTask.title,
+      priority: editTask.priority,
+      status: editTask.status,
+      // map UI assigneeId to backend field employeeId
+      employeeId: editTask.assigneeId === "" ? null : Number(editTask.assigneeId),
+    };
 
     try {
-      setIsDeleting(true);
-      await projectAPI.delete(id); // ✅ call API
-      alert("Project deleted successfully!");
-      navigate("/"); // go back to projects list
+      if (editTask.id) {
+        const updated = await taskAPI.updateTask(editTask.id, payload);
+        const normalized = { ...updated, assigneeId: updated.employeeId == null ? "" : Number(updated.employeeId) };
+        setTasks((prev) => prev.map((t) => (Number(t.id) === Number(normalized.id) ? normalized : t)));
+
+        // ensure assigned employee appears in project members immediately
+        if (normalized.assigneeId) {
+          const empId = Number(normalized.assigneeId);
+          const alreadyMember = project?.members?.some((m) => Number(m.id) === empId);
+          if (!alreadyMember) {
+            // try to find in allEmployees, otherwise fetch by id
+            let assignedEmp = allEmployees.find((e) => Number(e.id) === empId);
+            if (!assignedEmp) {
+              try {
+                assignedEmp = await employeeAPI.getById(empId);
+              } catch (err) {
+                assignedEmp = null;
+              }
+            }
+            if (assignedEmp) {
+              setProject((prev) => ({ ...prev, members: [...(prev?.members || []), assignedEmp] }));
+            }
+          }
+        }
+      } else {
+        const created = await taskAPI.createTask(project.id, payload);
+        const normalized = { ...created, assigneeId: created.employeeId == null ? "" : Number(created.employeeId) };
+        setTasks((prev) => [...prev, normalized]);
+
+        // ensure assigned employee appears in project members immediately
+        if (normalized.assigneeId) {
+          const empId = Number(normalized.assigneeId);
+          const alreadyMember = project?.members?.some((m) => Number(m.id) === empId);
+          if (!alreadyMember) {
+            let assignedEmp = allEmployees.find((e) => Number(e.id) === empId);
+            if (!assignedEmp) {
+              try {
+                assignedEmp = await employeeAPI.getById(empId);
+              } catch (err) {
+                assignedEmp = null;
+              }
+            }
+            if (assignedEmp) {
+              setProject((prev) => ({ ...prev, members: [...(prev?.members || []), assignedEmp] }));
+            }
+          }
+        }
+      }
+      setShowTaskModal(false);
+      setEditTask(null);
     } catch (err) {
-      console.error("❌ Error deleting project:", err);
-      alert(err.response?.data?.error || "Failed to delete project");
+      console.error("Failed to save task", err);
+      alert("Failed to save task");
+    } finally {
+      setSaveTaskLoading(false);
+    }
+  };
+
+
+  // Drag and drop update of status (members can drag their assigned tasks; backend should enforce permissions)
+  const onDragEnd = async (result) => {
+    if (!result.destination) return;
+    const taskId = result.draggableId;
+    const newStatus = result.destination.droppableId;
+
+    // optimistic update
+    setTasks((prev) => prev.map((t) => (String(t.id) === String(taskId) ? { ...t, status: newStatus } : t)));
+    try {
+      await taskAPI.updateTask(taskId, { status: newStatus });
+    } catch (err) {
+      console.error("Failed to update task status", err);
+      // optional: reload tasks or revert
+    }
+  };
+
+  // UI helpers
+  const getAssigneeName = (task) => {
+    const assigneeId = task?.assigneeId;
+    if (assigneeId === "" || assigneeId == null) return "Unassigned";
+    // project.members should be an array of employee objects with `id` and `name`
+    const member = project?.members?.find(
+      (m) => Number(m.id) === Number(assigneeId)
+    );
+    return member ? member.name : "Unassigned";
+  };
+
+  const handleDeleteProject = async () => {
+    if (!window.confirm("Are you sure you want to delete this project?")) return;
+    try {
+      setIsDeleting(true);
+      await projectAPI.delete(id);
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete project");
     } finally {
       setIsDeleting(false);
     }
@@ -115,22 +362,15 @@ function ProjectDetailsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="p-8 max-w-6xl mx-auto">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-blue-900 hover:text-blue-700 mb-4 transition-colors"
-        >
+      <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+        <button onClick={() => navigate(-1)} className="flex items-center text-blue-900 hover:text-blue-700 mb-4">
           <ArrowLeft className="h-5 w-5 mr-2" />
           Back to Projects
         </button>
 
-        {/* Project Card */}
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 mb-8">
           <h1 className="text-3xl font-bold text-blue-900 mb-2">{project.title}</h1>
           <p className="text-gray-700 text-lg leading-relaxed">{project.description}</p>
-
-          {/* Status + Priority */}
           <div className="flex flex-wrap gap-3 my-6">
             <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(project.status)}`}>
               {project.status}
@@ -140,124 +380,263 @@ function ProjectDetailsPage() {
             </span>
           </div>
 
-          {/* Progress Bar */}
-          <div>
+          <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-700">Project Progress</span>
-              <span className="text-sm font-semibold text-blue-900">{project.progress ?? 0}%</span>
+              {/* <span className="text-sm font-semibold text-blue-900">{project.progress ?? 0}%</span> */}
+              <span className="text-sm font-semibold text-blue-900">{derivedProgress}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
+              {/* <div
                 className={`h-3 rounded-full transition-all duration-300 ${getProgressColor(project.progress)}`}
                 style={{ width: `${project.progress}%` }}
-              ></div>
+              /> */}
+              <div
+                className={`h-3 rounded-full transition-all duration-300 ${getProgressColor(derivedProgress)}`}
+                style={{ width: `${derivedProgress}%` }}
+              />
             </div>
           </div>
         </div>
 
-        {/* Project Info Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center mb-2">
-              <Calendar className="h-5 w-5 text-blue-900 mr-2" />
-              <span className="text-sm font-medium text-gray-700">Start Date</span>
-            </div>
-            <p className="text-blue-900 font-semibold">{new Date(project.startDate).toLocaleDateString()}</p>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center mb-2">
-              <Clock className="h-5 w-5 text-red-600 mr-2" />
-              <span className="text-sm font-medium text-gray-700">Deadline</span>
-            </div>
-            <p className="text-blue-900 font-semibold">{new Date(project.deadline).toLocaleDateString()}</p>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center mb-2">
-              <Target className="h-5 w-5 text-blue-900 mr-2" />
-              <span className="text-sm font-medium text-gray-700">Created By</span>
-            </div>
-            <p className="text-blue-900 font-semibold">{project.createdBy}</p>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center mb-2">
-              <Users className="h-5 w-5 text-blue-900 mr-2" />
-              <span className="text-sm font-medium text-gray-700">Team Size</span>
-            </div>
-            <p className="text-blue-900 font-semibold">{project.members?.length ?? 0} Members</p>
-          </div>
+          <InfoCard icon={Calendar} label="Start Date" value={new Date(project.startDate).toLocaleDateString()} color="text-blue-900" />
+          <InfoCard icon={Clock} label="Deadline" value={new Date(project.deadline).toLocaleDateString()} color="text-red-600" />
+          <InfoCard icon={Target} label="Created By" value={project.createdBy} color="text-blue-900" />
+          <InfoCard icon={Users} label="Team Size" value={`${project.members?.length ?? 0} Members`} color="text-blue-900" />
         </div>
 
-        {/* Team Members */}
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-blue-900">Team Members</h2>
+          {/* top summary + CTA */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-sm text-gray-700">
+              <span className="font-semibold">{tasks.length}</span> tasks ·{" "}
+              <span className="font-semibold">
+                {tasks.filter((t) => String(t.status).toUpperCase() === "COMPLETED").length}
+              </span>{" "}
+              completed
+            </div>
+            {isCreator && (
+              <button
+                onClick={handleAddTaskClick}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-sm"
+              >
+                + Add Task
+              </button>
+            )}
           </div>
 
-          {project.members?.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {project.members?.map((emp) => (
-                <div
-                  key={emp.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200"
-                >
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-blue-900 text-white rounded-full flex items-center justify-center font-semibold text-sm mr-3">
-                      {emp.name
-                        ?.split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
-                    </div>
-                    <div>
-                      <span className="font-medium text-blue-900">{emp.name}</span>
-                      <p className="text-sm text-gray-600">{emp.task}</p>
-                    </div>
+          {taskLoading ? (
+            // skeleton placeholders while loading
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {statusColumns.map((col) => (
+                <div key={col.id} className="bg-white rounded-lg border border-gray-200 min-h-[220px] p-3">
+                  <div className="font-bold mb-2 text-blue-900">{col.label}</div>
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="h-12 bg-gray-200 rounded animate-pulse" />
+                    ))}
                   </div>
-                  {emp.status === "Completed" ? (
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-yellow-600" />
-                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-600 italic">No team members assigned yet.</p>
+            <DragDropContext onDragEnd={onDragEnd}>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {statusColumns.map((col) => (
+                  <Droppable droppableId={col.id} key={col.id}>
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className="bg-white rounded-lg border border-gray-200 min-h-[300px] p-3 flex flex-col"
+                      >
+                        <div className="font-bold mb-2 text-blue-900 flex items-center justify-between">
+                          <span>{col.label}</span>
+                          <span className="text-xs text-gray-500">{tasksByStatus[col.id].length}</span>
+                        </div>
+
+                        {tasksByStatus[col.id].length === 0 ? (
+                          <div className="flex-1 flex items-center justify-center text-sm text-gray-500 italic">
+                            No tasks
+                          </div>
+                        ) : (
+                          tasksByStatus[col.id].map((task, idx) => (
+                            <Draggable key={task.id} draggableId={String(task.id)} index={idx}>
+                              {(prov) => (
+                                <div
+                                  ref={prov.innerRef}
+                                  {...prov.draggableProps}
+                                  {...prov.dragHandleProps}
+                                  className="mb-3 bg-blue-50 border border-blue-200 rounded p-3 shadow-sm cursor-pointer hover:bg-blue-100 transition"
+                                  onClick={() => isCreator && handleEditTask(task)}
+                                >
+                                  <div className="font-medium">{task.title}</div>
+                                  <div className="text-xs text-gray-600">
+                                    {task.priority} · {getAssigneeName(task)}
+                                  </div>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))
+                        )}
+
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                ))}
+              </div>
+            </DragDropContext>
           )}
         </div>
 
-        {/* Admin Actions */}
-        {userRole === "ADMIN" && (
+        {/* Add / Edit Task Modal */}
+        {showTaskModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-semibold mb-4">
+                {editTask?.id ? "Edit Task" : "Add Task"}
+              </h3>
+
+              <form onSubmit={handleSaveTask} className="flex flex-col h-full">
+                {/* Task Title */}
+                <input
+                  type="text"
+                  className="w-full border rounded p-2 mb-3"
+                  placeholder="Task Title"
+                  value={editTask?.title || ""}
+                  onChange={(e) =>
+                    setEditTask((t) => ({ ...t, title: e.target.value }))
+                  }
+                  required
+                />
+
+                {/* Priority */}
+                <select
+                  className="w-full border rounded p-2 mb-3"
+                  value={editTask?.priority || "MEDIUM"}
+                  onChange={(e) =>
+                    setEditTask((t) => ({ ...t, priority: e.target.value }))
+                  }
+                >
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                  <option value="CRITICAL">Critical</option>
+                </select>
+
+                {/* Assign To */}
+                <div className="mb-4">
+                  <div className="font-semibold mb-2">Assign to:</div>
+
+                  {/* Search Input */}
+                  <input
+                    type="text"
+                    placeholder="Search members..."
+                    className="w-full border rounded p-2 mb-3"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+
+                  {/* Members list */}
+                  <div className="max-h-32 overflow-y-auto flex flex-col gap-2">
+                  {allEmployees
+                    .filter((emp) =>
+                      emp.name.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((emp) => {
+                      const isSelected = Number(editTask?.assigneeId) === Number(emp.id);
+                      return (
+                        <button
+                          type="button"
+                          key={emp.id}
+                          className={`flex items-center justify-between px-3 py-2 rounded-lg border ${
+                            isSelected
+                              ? "bg-blue-600 text-white border-blue-700"
+                              : "bg-gray-100 text-blue-900 border-gray-300 hover:bg-gray-200"
+                          }`}
+                          onClick={() => handleAssignMember(emp.id)}
+                        >
+                          <span>{emp.name}</span>
+                          {isSelected && (
+                            <span className="text-xs font-medium">Selected</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Action buttons at bottom right */}
+                <div className="flex justify-end gap-2 mt-auto">
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded bg-gray-200"
+                    onClick={() => {
+                      setShowTaskModal(false);
+                      setEditTask(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className={`flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg ${saveTaskLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    disabled={saveTaskLoading}
+                  >
+                    <Pencil size={16} />
+                    {saveTaskLoading ? "Saving..." : "Save Task"}
+                   </button>
+
+                  {/* Delete button (owner only, visible when editing) */}
+                  {isCreator && editTask?.id && (
+                    <button
+                      type="button"
+                      className={`flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg ${isDeletingTask ? "opacity-50 cursor-not-allowed" : ""}`}
+                      onClick={() => handleDeleteTask(editTask.id)}
+                      disabled={isDeletingTask}
+                    >
+                      <Trash2 size={16} />
+                      {isDeletingTask ? "Deleting..." : "Delete Task"}
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+
+        {/* Admin actions */}
+        {isCreator && (
           <div className="mt-8 bg-white rounded-lg shadow-lg p-6 border border-gray-200">
             <h3 className="text-lg font-semibold text-blue-900 mb-4">Admin Actions</h3>
             <div className="flex flex-wrap gap-4">
-
-              <button 
-                className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg transition-all duration-200 font-medium"
-                onClick={() => navigate(`/edit-project/${project.id}`)}
-              >
+              <button className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg" onClick={() => navigate(`/edit-project/${project.id}`)}>
                 <Pencil size={16} />
                 Edit Project
               </button>
-
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className={`flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-all duration-200 font-medium ${
-                  isDeleting ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
+              <button onClick={handleDeleteProject} className={`flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg ${isDeleting ? "opacity-50 cursor-not-allowed" : ""}`} disabled={isDeleting}>
                 <Trash2 size={16} />
                 {isDeleting ? "Deleting..." : "Delete Project"}
               </button>
-
             </div>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function InfoCard({ icon: Icon, label, value, color }) {
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+      <div className="flex items-center mb-2">
+        <Icon className={`h-5 w-5 ${color} mr-2`} />
+        <span className="text-sm font-medium text-gray-700">{label}</span>
+      </div>
+      <p className="text-blue-900 font-semibold">{value}</p>
     </div>
   );
 }
