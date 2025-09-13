@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { projectAPI } from "../services/projectAPI";
 
+import toast from "react-hot-toast";
+import { SuccessToast, ErrorToast, ConfirmToast } from "../components/CustomToasts";
+import LoadingOverlay from "../components/LoadingOverlay"; 
+
 const AdminProjects = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // if id exists → edit mode
@@ -12,9 +16,11 @@ const AdminProjects = () => {
   const [priority, setPriority] = useState("LOW");
   const [startDate, setStartDate] = useState("");
   const [deadline, setDeadline] = useState("");
+
   const [loading, setLoading] = useState(false); // loading prior values
 
-  // ✅ Prefill form if editing
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     if (isEditMode) {
       const fetchProject = async () => {
@@ -39,6 +45,8 @@ const AdminProjects = () => {
   // ✅ Submit handler
   const handleSubmit = async () => {
     if (loading) return;
+    setIsSubmitting(true);
+
     try {
       const payload = {
         title,
@@ -50,18 +58,29 @@ const AdminProjects = () => {
 
       if (isEditMode) {
         await projectAPI.update(id, payload);
-        alert("Project updated successfully!");
-        navigate(-1);
-      } else {
-        await projectAPI.create(payload);
-        alert("Project created successfully!");
-        navigate(-1);
+
+        toast.custom((
+          <SuccessToast title="Project Updated!" message="Your project has been updated successfully." />
+        ), { position: "top-center", duration: 3000 });
+                navigate(-1); // go back to previous page
+              } else {
+                await projectAPI.create(payload);
+                toast.custom((
+          <SuccessToast title="Project Created!" message="Your project has been added successfully." />
+        ), { position: "top-center", duration: 3000 });
+                navigate(-1); // go back to previous page
+
       }
 
       navigate("/"); // redirect back to project list
     } catch (err) {
       console.error("❌ Error saving project:", err);
-      alert(err.response?.data?.error || "Failed to save project");
+      toast.custom((
+        <ErrorToast title="Save Failed" message="Something went wrong while saving." />
+      ), { position: "top-center", duration: 3500 });
+    }
+    finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -143,19 +162,36 @@ const AdminProjects = () => {
         <div className="flex justify-between items-center">
           <button
             onClick={() => navigate(-1)}
-            className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300"
-            disabled={loading}
+            disabled={isSubmitting} // disable cancel if submitting
+            className={`px-6 py-3 rounded-lg ${
+              isSubmitting
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
           >
             Cancel
           </button>
+
           <button
             onClick={handleSubmit}
-            className={`bg-blue-900 text-white px-8 py-3 rounded-lg hover:bg-blue-800 ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
-            disabled={loading}
+            disabled={isSubmitting} // disable submit if submitting
+            className={`px-8 py-3 rounded-lg flex items-center justify-center ${
+              isSubmitting
+                ? "bg-blue-400 text-white cursor-not-allowed"
+                : "bg-blue-900 text-white hover:bg-blue-800"
+            }`}
           >
-            {isEditMode ? "Update Project" : "Create Project"}
+            {isSubmitting ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                {isEditMode ? "Updating..." : "Creating..."}
+              </>
+            ) : (
+              isEditMode ? "Update Project" : "Create Project"
+            )}
           </button>
         </div>
+
       </div>
     </div>
   );

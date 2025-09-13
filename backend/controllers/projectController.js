@@ -26,7 +26,9 @@ export async function createProject(req, res) {
 
     // Validate and parse dates
     const parsedStartDate = startDate ? new Date(startDate) : new Date(); // Default to now
-    const parsedDeadline = deadline ? new Date(deadline) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Default to 30 days from now
+    const parsedDeadline = deadline
+      ? new Date(deadline)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Default to 30 days from now
 
     // Check for invalid dates
     if (startDate && isNaN(parsedStartDate.getTime())) {
@@ -44,10 +46,10 @@ export async function createProject(req, res) {
         startDate: parsedStartDate,
         deadline: parsedDeadline,
         creator: {
-          connect: { id: user.employee.id }
+          connect: { id: user.employee.id },
         },
         owner: {
-          connect: { id: user.employee.id }
+          connect: { id: user.employee.id },
         },
         status: "PLANNING",
         members: {

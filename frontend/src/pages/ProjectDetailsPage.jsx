@@ -16,6 +16,10 @@ import { employeeAPI } from "../services/employeeAPI";
 // import { projectEmpAPI } from "../services/projectEmpAPI";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
+import toast from "react-hot-toast";
+import { SuccessToast, ErrorToast, ConfirmToast } from "../components/CustomToasts";
+import ProjectDetailsSkeleton from "../components/ProjectDetailsSkeleton";
+
 function ProjectDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -226,7 +230,6 @@ function ProjectDetailsPage() {
     }
   };
 
-  // ...existing code...
   const handleSaveTask = async (e) => {
     e.preventDefault();
     setSaveTaskLoading(true);
@@ -317,15 +320,15 @@ function ProjectDetailsPage() {
   };
 
   // UI helpers
-  const getAssigneeName = (task) => {
-    const assigneeId = task?.assigneeId;
-    if (assigneeId === "" || assigneeId == null) return "Unassigned";
-    // project.members should be an array of employee objects with `id` and `name`
-    const member = project?.members?.find(
-      (m) => Number(m.id) === Number(assigneeId)
-    );
-    return member ? member.name : "Unassigned";
-  };
+  // const getAssigneeName = (task) => {
+  //   const assigneeId = task?.assigneeId;
+  //   if (assigneeId === "" || assigneeId == null) return "Unassigned";
+  //   // project.members should be an array of employee objects with `id` and `name`
+  //   const member = project?.members?.find(
+  //     (m) => Number(m.id) === Number(assigneeId)
+  //   );
+  //   return member ? member.name : "Unassigned";
+  // };
 
   const handleDeleteProject = async () => {
     if (!window.confirm("Are you sure you want to delete this project?")) return;
@@ -341,16 +344,72 @@ function ProjectDetailsPage() {
     }
   };
 
-  if (loading) {
+ // Render assignee as clickable name (hover underline) that navigates to profile
+ const renderAssignee = (task) => {
+    const assigneeId = task?.assigneeId;
+    if (assigneeId === "" || assigneeId == null) return <span className="italic">Unassigned</span>;
+    const member = project?.members?.find((m) => Number(m.id) === Number(assigneeId));
+    if (!member) return <span>Unassigned</span>;
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-900 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-700 text-lg">Loading project details...</p>
-        </div>
-      </div>
+      <button
+        type="button"
+        onClick={() => navigate(`/profile/${member.id}`)}
+        className="text-blue-700 hover:underline focus:outline-none"
+      >
+        {member.name}
+      </button>
     );
-  }
+ };
+
+//   const [isDeleting, setIsDeleting] = useState(false);
+  
+//   const handleDelete = async () => {
+//   toast.custom(
+//     (t) => (
+//       <ConfirmToast
+//         title="Delete Project?"
+//         message="Are you sure you want to delete this project? This action cannot be undone."
+//         onConfirm={async () => {
+//           toast.dismiss(t.id); // close confirm toast
+//           try {
+//             setIsDeleting(true);
+//             await projectAPI.delete(id); // call API
+//             toast.custom(
+//               <SuccessToast
+//                 title="Project Deleted!"
+//                 message="The project was removed successfully."
+//               />,
+//               { position: "top-center", duration: 3000 }
+//             );
+//             navigate("/"); // go back to projects list
+//           } catch (err) {
+//             console.error("❌ Error deleting project:", err);
+//             toast.custom(
+//               <ErrorToast
+//                 title="Delete Failed"
+//                 message={err.response?.data?.error || "Failed to delete project"}
+//               />,
+//               { position: "top-center", duration: 3500 }
+//             );
+//           } finally {
+//             setIsDeleting(false);
+//           }
+//         }}
+//         onCancel={() => toast.dismiss(t.id)}
+//       />
+//     ),
+//     { position: "top-center", duration: 5000 }
+//   );
+// };
+
+
+  if (loading) {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+      <ProjectDetailsSkeleton />
+    </div>
+  );
+}
 
   if (!project) {
     return (
@@ -365,7 +424,7 @@ function ProjectDetailsPage() {
       <div className="p-4 sm:p-8 max-w-6xl mx-auto">
         <button onClick={() => navigate(-1)} className="flex items-center text-blue-900 hover:text-blue-700 mb-4">
           <ArrowLeft className="h-5 w-5 mr-2" />
-          Back to Projects
+          Back
         </button>
 
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 mb-8">
@@ -383,14 +442,9 @@ function ProjectDetailsPage() {
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-700">Project Progress</span>
-              {/* <span className="text-sm font-semibold text-blue-900">{project.progress ?? 0}%</span> */}
               <span className="text-sm font-semibold text-blue-900">{derivedProgress}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
-              {/* <div
-                className={`h-3 rounded-full transition-all duration-300 ${getProgressColor(project.progress)}`}
-                style={{ width: `${project.progress}%` }}
-              /> */}
               <div
                 className={`h-3 rounded-full transition-all duration-300 ${getProgressColor(derivedProgress)}`}
                 style={{ width: `${derivedProgress}%` }}
@@ -427,19 +481,7 @@ function ProjectDetailsPage() {
           </div>
 
           {taskLoading ? (
-            // skeleton placeholders while loading
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              {statusColumns.map((col) => (
-                <div key={col.id} className="bg-white rounded-lg border border-gray-200 min-h-[220px] p-3">
-                  <div className="font-bold mb-2 text-blue-900">{col.label}</div>
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="h-12 bg-gray-200 rounded animate-pulse" />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ProjectDetailsSkeleton tasksOnly />
           ) : (
             <DragDropContext onDragEnd={onDragEnd}>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -473,7 +515,7 @@ function ProjectDetailsPage() {
                                 >
                                   <div className="font-medium">{task.title}</div>
                                   <div className="text-xs text-gray-600">
-                                    {task.priority} · {getAssigneeName(task)}
+                                    {task.priority} · {renderAssignee(task)}
                                   </div>
                                 </div>
                               )}
@@ -487,8 +529,7 @@ function ProjectDetailsPage() {
                   </Droppable>
                 ))}
               </div>
-            </DragDropContext>
-          )}
+            </DragDropContext>)}
         </div>
 
         {/* Add / Edit Task Modal */}
