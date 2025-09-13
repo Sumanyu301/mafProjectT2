@@ -22,7 +22,9 @@ export async function createMilestone(req, res) {
     });
 
     if (existingProject.ownerId !== user.employee.id) {
-      return res.status(403).json({ error: "Only project owner can create milestones" });
+      return res
+        .status(403)
+        .json({ error: "Only project owner can create milestones" });
     }
 
     // Validate and parse due date
@@ -115,7 +117,9 @@ export async function updateMilestone(req, res) {
     });
 
     if (existingMilestone.project.ownerId !== user.employee.id) {
-      return res.status(403).json({ error: "Only project owner can update milestones" });
+      return res
+        .status(403)
+        .json({ error: "Only project owner can update milestones" });
     }
 
     // Prepare update data with date validation
@@ -171,7 +175,9 @@ export async function deleteMilestone(req, res) {
     });
 
     if (existingMilestone.project.ownerId !== user.employee.id) {
-      return res.status(403).json({ error: "Only project owner can delete milestones" });
+      return res
+        .status(403)
+        .json({ error: "Only project owner can delete milestones" });
     }
 
     // Delete the milestone

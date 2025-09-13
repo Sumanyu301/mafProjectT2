@@ -22,7 +22,9 @@ export async function assignEmployeesToProject(req, res) {
     });
 
     if (existingProject.ownerId !== user.employee.id) {
-      return res.status(403).json({ error: "Only project owner can assign employees" });
+      return res
+        .status(403)
+        .json({ error: "Only project owner can assign employees" });
     }
 
     // Validate input
@@ -156,7 +158,9 @@ export async function removeEmployeeFromProject(req, res) {
     });
 
     if (existingProject.ownerId !== user.employee.id) {
-      return res.status(403).json({ error: "Only project owner can remove employees" });
+      return res
+        .status(403)
+        .json({ error: "Only project owner can remove employees" });
     }
 
     // Check if employee exists
