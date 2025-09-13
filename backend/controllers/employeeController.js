@@ -129,16 +129,16 @@ export const getEmployeeById = async (req, res) => {
   }
 };
 
-// Update Employee
+// Update Employee Profile (Enhanced)
 export const updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, contact } = req.body;
+    const { name, contact, addSkills, removeSkills } = req.body;
 
-    // Check if user owns this employee record or is admin
+    // Check if user owns this employee record
     const employee = await prisma.employee.findUnique({
       where: { id: Number(id) },
-      include: { user: true },
+      include: { user: true, skills: { include: { skill: true } } },
     });
 
     if (!employee) {
@@ -152,17 +152,162 @@ export const updateEmployee = async (req, res) => {
         .json({ error: "Not authorized to update this employee profile" });
     }
 
+    // Update basic employee info
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (contact !== undefined) updateData.contact = contact;
+
     const updatedEmployee = await prisma.employee.update({
       where: { id: Number(id) },
-      data: { name, contact },
+      data: updateData,
       include: {
         user: {
           select: { id: true, username: true, email: true },
         },
+        skills: { include: { skill: true } },
       },
     });
-    res.json(updatedEmployee);
+
+    // Handle skills removal
+    if (removeSkills && Array.isArray(removeSkills) && removeSkills.length > 0) {
+      await prisma.employeeSkill.deleteMany({
+        where: { 
+          employeeId: Number(id),
+          skillId: { in: removeSkills.map(id => Number(id)) }
+        },
+      });
+    }
+
+    // Handle skills addition
+    if (addSkills && Array.isArray(addSkills) && addSkills.length > 0) {
+      for (const skillUpdate of addSkills) {
+        const { skillId, yearsOfExperience } = skillUpdate;
+        
+        // Verify skill exists
+        const skillExists = await prisma.skill.findUnique({
+          where: { id: Number(skillId) },
+        });
+
+        if (skillExists) {
+          // Check if skill already exists for this employee
+          const existingSkill = await prisma.employeeSkill.findUnique({
+            where: {
+              employeeId_skillId: {
+                employeeId: Number(id),
+                skillId: Number(skillId)
+              }
+            }
+          });
+
+          if (!existingSkill) {
+            await prisma.employeeSkill.create({
+              data: {
+                employeeId: Number(id),
+                skillId: Number(skillId),
+                yearsExperience: Number(yearsOfExperience) || 1,
+              },
+            });
+          }
+        }
+      }
+    }
+
+    // Fetch updated employee with new skills
+    const finalEmployee = await prisma.employee.findUnique({
+      where: { id: Number(id) },
+      include: {
+        user: {
+          select: { id: true, username: true, email: true },
+        },
+        skills: { include: { skill: true } },
+      },
+    });
+
+    res.json(finalEmployee);
   } catch (error) {
+    console.error("Update employee error:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get Current User's Employee Profile
+export const getMyProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const employee = await prisma.employee.findUnique({
+      where: { userId: userId },
+      include: {
+        user: {
+          select: { id: true, username: true, email: true },
+        },
+        skills: { 
+          include: { 
+            skill: { 
+              select: { id: true, name: true } 
+            } 
+          } 
+        },
+        assignedTasks: { 
+          include: { 
+            project: { 
+              select: { id: true, title: true, status: true }
+            } 
+          },
+          where: {
+            status: { not: "COMPLETED" }
+          }
+        },
+        projectMembers: { 
+          include: { 
+            project: { 
+              select: { id: true, title: true, status: true, ownerId: true }
+            } 
+          } 
+        },
+        createdProjects: {
+          select: { id: true, title: true, status: true }
+        },
+        ownedProjects: {
+          select: { id: true, title: true, status: true }
+        }
+      },
+    });
+
+    if (!employee) {
+      return res.status(404).json({ error: "Employee profile not found" });
+    }
+
+    // Calculate statistics
+    const totalTasks = await prisma.task.count({
+      where: { employeeId: employee.id }
+    });
+
+    const completedTasks = await prisma.task.count({
+      where: { 
+        employeeId: employee.id,
+        status: "COMPLETED"
+      }
+    });
+
+    const ownedProjectsCount = employee.ownedProjects.length;
+    const memberProjectsCount = employee.projectMembers.length;
+
+    // Format response
+    const profileData = {
+      ...employee,
+      statistics: {
+        totalTasks,
+        completedTasks,
+        ownedProjects: ownedProjectsCount,
+        memberProjects: memberProjectsCount,
+        totalProjects: ownedProjectsCount + memberProjectsCount
+      }
+    };
+
+    res.json(profileData);
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
     res.status(500).json({ error: error.message });
   }
 };
