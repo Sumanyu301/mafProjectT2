@@ -61,21 +61,6 @@ function Login() {
               <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-
-          {/* Footer links */}
-          {/* <div className="flex items-center justify-center space-x-6 mt-6 text-sm">
-            <Link to="/privacy" className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
-              Privacy Policy
-            </Link>
-            <span className="text-gray-400">•</span>
-            <Link to="/terms" className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
-              Terms of Service
-            </Link>
-            <span className="text-gray-400">•</span>
-            <Link to="/help" className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
-              Help
-            </Link>
-          </div> */}
         </div>
       </div>
     </div>

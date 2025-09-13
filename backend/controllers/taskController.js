@@ -4,6 +4,7 @@ import prisma from "../prismaClient.js";
 export async function createTask(req, res) {
   try {
     const { id } = req.params; // project id
+    // accept both assignedTo and employeeId from client for compatibility
     const {
       title,
       description,
@@ -11,8 +12,11 @@ export async function createTask(req, res) {
       estimatedHours,
       startDate,
       endDate,
-      assignedTo,
+      assignedTo: bodyAssignedTo,
+      employeeId: bodyEmployeeId,
     } = req.body;
+
+    const assignedTo = bodyAssignedTo ?? bodyEmployeeId ?? null;
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
@@ -27,7 +31,6 @@ export async function createTask(req, res) {
     const parsedStartDate = startDate ? new Date(startDate) : null;
     const parsedEndDate = endDate ? new Date(endDate) : null;
 
-    // Check for invalid dates
     if (startDate && isNaN(parsedStartDate.getTime())) {
       return res.status(400).json({ error: "Invalid start date format" });
     }
@@ -36,9 +39,10 @@ export async function createTask(req, res) {
     }
 
     // If assignedTo is provided, verify the employee exists
-    if (assignedTo) {
+    const employeeIdNum = assignedTo ? parseInt(assignedTo) : null;
+    if (employeeIdNum) {
       const employee = await prisma.employee.findUnique({
-        where: { id: parseInt(assignedTo) },
+        where: { id: employeeIdNum },
       });
 
       if (!employee) {
@@ -55,7 +59,7 @@ export async function createTask(req, res) {
         startDate: parsedStartDate,
         endDate: parsedEndDate,
         projectId: parseInt(id),
-        employeeId: assignedTo ? parseInt(assignedTo) : null,
+        employeeId: employeeIdNum,
         status: "TODO",
       },
       include: {
@@ -67,6 +71,28 @@ export async function createTask(req, res) {
         },
       },
     });
+
+    // Ensure the assigned employee is also added to project members
+    if (employeeIdNum) {
+      try {
+        await prisma.projectEmployee.upsert({
+          where: {
+            projectId_employeeId: {
+              projectId: parseInt(id),
+              employeeId: employeeIdNum,
+            },
+          },
+          create: {
+            projectId: parseInt(id),
+            employeeId: employeeIdNum,
+          },
+          update: {}, // do nothing if exists
+        });
+      } catch (err) {
+        console.warn("Failed to upsert projectEmployee after task create:", err);
+        // do not fail task creation for this; just log
+      }
+    }
 
     res.status(201).json(task);
   } catch (error) {
@@ -94,7 +120,7 @@ export async function getProjectTasks(req, res) {
 
     if (status) whereClause.status = status;
     if (priority) whereClause.priority = priority;
-    if (assignedTo) whereClause.assignedTo = parseInt(assignedTo);
+    if (assignedTo) whereClause.employeeId = parseInt(assignedTo);
 
     const tasks = await prisma.task.findMany({
       where: whereClause,
@@ -158,6 +184,7 @@ export async function getTaskById(req, res) {
 export async function updateTask(req, res) {
   try {
     const { taskId } = req.params;
+    // accept both assignedTo and employeeId from client for compatibility
     const {
       title,
       description,
@@ -165,8 +192,11 @@ export async function updateTask(req, res) {
       status,
       startDate,
       endDate,
-      assignedTo,
+      assignedTo: bodyAssignedTo,
+      employeeId: bodyEmployeeId,
     } = req.body;
+
+    const assignedTo = bodyAssignedTo ?? bodyEmployeeId ?? undefined;
 
     // Check if task exists
     const existingTask = await prisma.task.findUnique({
@@ -200,18 +230,22 @@ export async function updateTask(req, res) {
       updateData.endDate = parsedEndDate;
     }
 
+    let newEmployeeNum = undefined;
     if (assignedTo !== undefined) {
       if (assignedTo) {
+        newEmployeeNum = parseInt(assignedTo);
         const employee = await prisma.employee.findUnique({
-          where: { id: parseInt(assignedTo) },
+          where: { id: newEmployeeNum },
         });
 
         if (!employee) {
           return res.status(404).json({ error: "Assigned employee not found" });
         }
-        updateData.assignedTo = parseInt(assignedTo);
+        updateData.employeeId = newEmployeeNum;
       } else {
-        updateData.assignedTo = null;
+        // explicit unassign
+        updateData.employeeId = null;
+        newEmployeeNum = null;
       }
     }
 
@@ -228,6 +262,50 @@ export async function updateTask(req, res) {
         },
       },
     });
+
+    // If employee was assigned (or reassigned), ensure projectEmployee row exists
+    if (assignedTo !== undefined && newEmployeeNum) {
+      try {
+        const projectIdNum = updatedTask.projectId ?? existingTask.projectId;
+        await prisma.projectEmployee.upsert({
+          where: {
+            projectId_employeeId: {
+              projectId: projectIdNum,
+              employeeId: newEmployeeNum,
+            },
+          },
+          create: {
+            projectId: projectIdNum,
+            employeeId: newEmployeeNum,
+          },
+          update: {}, // noop if already exists
+        });
+      } catch (err) {
+        console.warn("Failed to upsert projectEmployee after task update:", err);
+      }
+    }
+
+    // If reassigned (oldEmployee exists and differs from new), optionally remove old mapping
+    try {
+      const projectIdNum = updatedTask.projectId ?? existingTask.projectId;
+      const oldEmployee = existingTask.employeeId;
+      // if oldEmployee exists and differs from newEmployeeNum (including unassign newEmployeeNum === null)
+      if (oldEmployee && oldEmployee !== newEmployeeNum) {
+        // count remaining tasks of oldEmployee in this project
+        const remaining = await prisma.task.count({
+          where: { projectId: projectIdNum, employeeId: oldEmployee },
+        });
+        if (remaining === 0) {
+          // safe to remove membership row
+          await prisma.projectEmployee.deleteMany({
+            where: { projectId: projectIdNum, employeeId: oldEmployee },
+          });
+        }
+      }
+    } catch (err) {
+      // log but don't fail
+      console.warn("Failed to clean up old projectEmployee mapping:", err);
+    }
 
     res.json(updatedTask);
   } catch (error) {

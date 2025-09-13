@@ -9,63 +9,64 @@ import ProjectDetailsPage from "./pages/ProjectDetailsPage";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import Layout from "./pages/Layout";
 import EmployeeProfile from "./pages/EmployeeProfile";
+import { ProjectProvider } from "./contexts/ProjectContext";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        
-        <Route element={<Layout />}>
-          <Route
-            path="/projects"
-            element={
-              <ProtectedRoute>
-                <ProjectsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/create-project"
-            element={
-              <ProtectedRoute>
-                <AdminProjects />
-              </ProtectedRoute>
-            }
-          />
-          <Route 
-            path="/edit-project/:id" 
-            element={
-              <ProtectedRoute>
-                <AdminProjects />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/" element={<ProjectsPage />} />
-          <Route path="/projects/:id" element={<ProjectDetailsPage />} />
+    <ProjectProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          
+          <Route element={<Layout />}>
+            <Route
+              path="/projects"
+              element={
+                <ProtectedRoute>
+                  <ProjectsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create-project"
+              element={
+                <ProtectedRoute>
+                  <AdminProjects />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/edit-project/:id" 
+              element={
+                <ProtectedRoute>
+                  <AdminProjects />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/" element={<ProjectsPage />} />
+            <Route path="/projects/:id" element={<ProjectDetailsPage />} />
 
-        <Route path="/profile" element={<EmployeeProfile />} />
-        </Route>
-        
-        {/* <Route path="/projects/:id" element={<ProjectDetailsPage />} />
+            <Route path="/profile" element={<EmployeeProfile />} />
+            <Route path="/profile/:id" element={<EmployeeProfile />} />
+          </Route>
+          
+        </Routes>
 
-        <Route path="/profile" element={<EmployeeProfile />} /> */}
-      </Routes>
-
-      {/* ✅ Global Toast Notifications */}
-      <Toaster 
-        position="top-right"
-        toastOptions={{
-          success: {
-            style: { background: "#4ade80", color: "#fff" }, // green
-          },
-          error: {
-            style: { background: "#ef4444", color: "#fff" }, // red
-          },
-        }}
-      />
-    </Router>
+        {/* ✅ Global Toast Notifications */}
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            success: {
+              style: { background: "#4ade80", color: "#fff" }, // green
+            },
+            error: {
+              style: { background: "#ef4444", color: "#fff" }, // red
+            },
+          }}
+        />
+      </Router>
+    </ProjectProvider>
   );
 }
 

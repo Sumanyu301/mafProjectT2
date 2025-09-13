@@ -146,61 +146,6 @@ export async function getAllProjects(req, res) {
 // ------------------------------------------------------------------------------------------------------------
 
 // Get a single project by ID with details
-// export async function getProjectById(req, res) {
-//   try {
-//     const { id } = req.params;
-
-//     const project = await prisma.project.findUnique({
-//       where: { id: parseInt(id) },
-//       include: {
-//         creator: {
-//           select: { id: true, name: true, contact: true },
-//         },
-//         members: {
-//           include: {
-//             employee: {
-//               select: {
-//                 id: true,
-//                 name: true,
-//                 contact: true,
-//               },
-//             },
-//           },
-//         },
-//         tasks: {
-//           select: {
-//             id: true,
-//             title: true,
-//             status: true,
-//             priority: true,
-//             startDate: true,
-//             endDate: true,
-//             assignedTo: {
-//               select: { id: true, name: true },
-//             },
-//           },
-//         },
-//         milestones: {
-//           select: {
-//             id: true,
-//             title: true,
-//             dueDate: true,
-//             completed: true,
-//           },
-//         },
-//       },
-//     });
-
-//     if (!project) {
-//       return res.status(404).json({ error: "Project not found" });
-//     }
-
-//     res.json(project);
-//   } catch (error) {
-//     console.error("Error fetching project:", error);
-//     res.status(500).json({ error: error.message });
-//   }
-// }
 export async function getProjectById(req, res) {
   try {
     const { id } = req.params;

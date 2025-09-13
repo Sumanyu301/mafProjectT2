@@ -42,12 +42,6 @@ const handleSignup = async (data) => {
   }
 };
 
-  // const features = [
-  //   { icon: Users, text: "Join our growing community" },
-  //   { icon: Shield, text: "Enterprise-grade security" },
-  //   { icon: Zap, text: "Lightning-fast performance" },
-  // ];
-
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden">
       {/* Background decoration */}
@@ -102,22 +96,6 @@ const handleSignup = async (data) => {
         </div>
       ))}
     </div>
-
-    {/* Stats */}
-    {/* <div className="grid grid-cols-3 gap-4 lg:gap-8">
-      <div className="text-center">
-        <div className="text-2xl lg:text-3xl font-bold text-blue-900">500+</div>
-        <div className="text-sm text-gray-600">Projects Managed</div>
-      </div>
-      <div className="text-center">
-        <div className="text-2xl lg:text-3xl font-bold text-blue-900">99%</div>
-        <div className="text-sm text-gray-600">Allocation Accuracy</div>
-      </div>
-      <div className="text-center">
-        <div className="text-2xl lg:text-3xl font-bold text-blue-900">100+</div>
-        <div className="text-sm text-gray-600">Active Employees</div>
-      </div>
-    </div> */}
   </div>
 </div>
 
@@ -152,21 +130,6 @@ const handleSignup = async (data) => {
                 <span>Log In Instead</span>
               </Link>
             </div>
-
-            {/* Footer links */}
-            {/* <div className="flex items-center justify-center space-x-6 mt-6 text-sm">
-              <button className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
-                Privacy Policy
-              </button>
-              <span className="text-gray-400">•</span>
-              <button className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
-                Terms of Service
-              </button>
-              <span className="text-gray-400">•</span>
-              <button className="text-gray-600 hover:text-blue-900 transition-colors font-medium">
-                Help
-              </button>
-            </div> */}
           </div>
         </div>
       </div>

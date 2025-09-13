@@ -131,6 +131,8 @@ export async function getProjectEmployees(req, res) {
       employees: employees,
       totalEmployees: employees.length,
     });
+
+    console.log(`Fetched ${employees} for project ${id}`);
   } catch (error) {
     console.error("Error fetching project employees:", error);
     res.status(500).json({ error: error.message });
