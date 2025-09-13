@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { projectAPI } from "../services/projectAPI";
 import { employeeAPI } from "../services/employeeAPI";
+import toast from "react-hot-toast";
+import { SuccessToast, ErrorToast, ConfirmToast } from "../components/CustomToasts";
+import LoadingOverlay from "../components/LoadingOverlay"; 
 
 const mockEmployees = [
   { id: 1, name: "Alice Johnson", skills: ["React", "Node.js"], available: true },
@@ -24,41 +27,9 @@ const AdminProjects = () => {
   const [allEmployees, setAllEmployees] = useState([]);
 
   const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEditMode = Boolean(id);
-
-  // 🔍 Search filter
-  // useEffect(() => {
-  //   setFilteredEmployees(
-  //     mockEmployees.filter(
-  //       (emp) =>
-  //         emp.name.toLowerCase().includes(search.toLowerCase()) ||
-  //         emp.skills.some((skill) =>
-  //           skill.toLowerCase().includes(search.toLowerCase())
-  //         )
-  //     )
-  //   );
-  // }, [search]);
-
-  // ✅ Prefill form if editing
-  // useEffect(() => {
-  //   if (isEditMode) {
-  //     const fetchProject = async () => {
-  //       try {
-  //         const project = await projectAPI.getById(id);
-  //         setTitle(project.title);
-  //         setDescription(project.description);
-  //         setPriority(project.priority);
-  //         setStartDate(project.startDate);
-  //         setDeadline(project.deadline);
-  //         setSelectedEmployees(project.employees || []);
-  //       } catch (err) {
-  //         console.error("❌ Error fetching project:", err);
-  //       }
-  //     };
-  //     fetchProject();
-  //   }
-  // }, [id, isEditMode]);
 
   // 🔍 Fetch employees from backend
   useEffect(() => {
@@ -131,34 +102,8 @@ const AdminProjects = () => {
   };
 
   // ✅ Submit handler
-  // const handleSubmit = async () => {
-  //   try {
-  //     const payload = {
-  //       title,
-  //       description,
-  //       priority,
-  //       startDate,
-  //       deadline,
-  //       employees: selectedEmployees,
-  //     };
-
-  //     if (isEditMode) {
-  //       await projectAPI.update(id, payload);
-  //       alert("Project updated successfully!");
-  //     } else {
-  //       await projectAPI.create(payload);
-  //       alert("Project created successfully!");
-  //     }
-
-  //     navigate("/"); // redirect to projects list
-  //   } catch (err) {
-  //     console.error("❌ Error saving project:", err);
-  //     alert(err.response?.data?.error || "Failed to save project");
-  //   }
-  // };
-
-  // ✅ Submit handler
   const handleSubmit = async () => {
+    setIsSubmitting(true);
     try {
       const payload = {
         title,
@@ -171,18 +116,26 @@ const AdminProjects = () => {
 
       if (isEditMode) {
         await projectAPI.update(id, payload);
-        alert("Project updated successfully!");
+        toast.custom((
+  <SuccessToast title="Project Updated!" message="Your project has been updated successfully." />
+), { position: "top-center", duration: 3000 });
         navigate(-1); // go back to previous page
       } else {
         await projectAPI.create(payload);
-        alert("Project created successfully!");
+        toast.custom((
+  <SuccessToast title="Project Created!" message="Your project has been added successfully." />
+), { position: "top-center", duration: 3000 });
         navigate(-1); // go back to previous page
       }
 
       navigate("/"); // redirect back to project list
     } catch (err) {
       console.error("❌ Error saving project:", err);
-      alert(err.response?.data?.error || "Failed to save project");
+      toast.custom((
+  <ErrorToast title="Save Failed" message="Something went wrong while saving." />
+), { position: "top-center", duration: 3500 });
+    }finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -334,20 +287,39 @@ const AdminProjects = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center">
-          <button
-            onClick={() => navigate(-1)}
-            className="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-900 text-white px-8 py-3 rounded-lg hover:bg-blue-800"
-          >
-            {isEditMode ? "Update Project" : "Create Project"}
-          </button>
-        </div>
+<div className="flex justify-between items-center">
+  <button
+    onClick={() => navigate(-1)}
+    disabled={isSubmitting} // disable cancel if submitting
+    className={`px-6 py-3 rounded-lg ${
+      isSubmitting
+        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+    }`}
+  >
+    Cancel
+  </button>
+
+  <button
+    onClick={handleSubmit}
+    disabled={isSubmitting} // disable submit if submitting
+    className={`px-8 py-3 rounded-lg flex items-center justify-center ${
+      isSubmitting
+        ? "bg-blue-400 text-white cursor-not-allowed"
+        : "bg-blue-900 text-white hover:bg-blue-800"
+    }`}
+  >
+    {isSubmitting ? (
+      <>
+        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+        {isEditMode ? "Updating..." : "Creating..."}
+      </>
+    ) : (
+      isEditMode ? "Update Project" : "Create Project"
+    )}
+  </button>
+</div>
+
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { authAPI } from "../services/authAPI";
 import { employeeAPI } from "../services/employeeAPI";
+import EmployeeSkeleton from "../components/EmployeeSkeleton"; 
 
 function EmployeeProfile() {
   const [employee, setEmployee] = useState(null);
@@ -51,12 +52,9 @@ function EmployeeProfile() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600 text-lg">Loading employee data...</p>
-      </div>
-    );
-  }
+  return <EmployeeSkeleton />;
+}
+
 
   if (!employee) {
     return (
@@ -77,6 +75,7 @@ function EmployeeProfile() {
 
       {/* Main content */}
       <div className="relative z-10 max-w-5xl mx-auto p-6">
+        
         {/* Header */}
         <div className="flex items-center space-x-6">
           {/* Profile Avatar */}
