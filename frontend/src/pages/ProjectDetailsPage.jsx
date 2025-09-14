@@ -368,7 +368,10 @@ function ProjectDetailsPage() {
     return (
       <button
         type="button"
-        onClick={() => navigate(`/profile/${profileId}`)}
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(`/profile/${profileId}`)}
+        }
         className="text-blue-700 hover:underline focus:outline-none"
       >
         {member.name}
