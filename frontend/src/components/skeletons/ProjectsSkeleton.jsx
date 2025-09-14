@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const ProjectCardSkeleton = ({ showTeamMember = false }) => {
   return (
@@ -25,11 +25,18 @@ const ProjectCardSkeleton = ({ showTeamMember = false }) => {
   );
 };
 
-const ProjectsSkeleton = ({ title = "Projects", dotColor = "purple", count = 1, showTeamMember = false }) => {
+const ProjectsSkeleton = ({
+  title = "Projects",
+  dotColor = "purple",
+  count = 1,
+  showTeamMember = false,
+}) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center gap-2 mb-4">
-        <div className={`w-2 h-2 bg-${dotColor}-300 rounded-full animate-pulse`}></div>
+        <div
+          className={`w-2 h-2 bg-${dotColor}-300 rounded-full animate-pulse`}
+        ></div>
         <div className="h-6 bg-gray-300 rounded w-32 animate-pulse"></div>
       </div>
       <div className="space-y-3">

@@ -2,10 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { employeeAPI } from "../services/employeeAPI";
 
-// import EmployeeSkeleton from "../components/EmployeeSkeleton"; 
+// import EmployeeSkeleton from "../components/EmployeeSkeleton";
 import { authAPI } from "../services/authAPI";
-import { ProfileSkeleton, SkillsSkeleton, ProjectsSkeleton } from "../components/skeletons";
-
+import {
+  ProfileSkeleton,
+  SkillsSkeleton,
+  ProjectsSkeleton,
+} from "../components/skeletons";
 
 export default function EmployeeProfile() {
   const { id } = useParams();
@@ -20,16 +23,21 @@ export default function EmployeeProfile() {
   const [isAddingSkill, setIsAddingSkill] = useState(false);
   const [skillsLoading, setSkillsLoading] = useState(false);
   const [projectsLoading, setProjectsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Edit form state - using fields available in current schema
   const [editForm, setEditForm] = useState({
     name: "",
     contact: "",
     addSkills: [],
-    removeSkills: []
+    removeSkills: [],
   });
 
-  const [newSkill, setNewSkill] = useState({ skillId: "", yearsOfExperience: 1 });
+  const [newSkill, setNewSkill] = useState({
+    skillId: "",
+    yearsOfExperience: 1,
+  });
 
   const handleProjectClick = (projectId) => {
     navigate(`/projects/${projectId}`);
@@ -43,18 +51,22 @@ export default function EmployeeProfile() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // First check if user is authenticated
       console.log("Checking authentication...");
       await authAPI.verify();
-      console.log("Authentication successful, proceeding to fetch profile data");
-      
+      console.log(
+        "Authentication successful, proceeding to fetch profile data"
+      );
+
       // If authentication passes, fetch the profile data
       await fetchData();
     } catch (authError) {
       console.error("Authentication failed:", authError);
       if (authError.response?.status === 401) {
-        setError("You need to log in to view this profile. Please go to the login page.");
+        setError(
+          "You need to log in to view this profile. Please go to the login page."
+        );
         setLoading(false);
         return;
       } else {
@@ -92,33 +104,38 @@ export default function EmployeeProfile() {
         name: employeeData.name || "",
         contact: employeeData.contact || "",
         addSkills: [],
-        removeSkills: []
+        removeSkills: [],
       });
 
       // Fetch all skills for the dropdown
       try {
         const skillsData = await employeeAPI.getAllSkills();
-        console.log('Loaded skills:', skillsData);
+        console.log("Loaded skills:", skillsData);
         setAllSkills(skillsData);
       } catch (skillsError) {
-        console.error('Failed to load skills:', skillsError);
+        console.error("Failed to load skills:", skillsError);
         setAllSkills([]); // Fallback to empty array
       }
-
     } catch (err) {
       console.error("Error fetching employee data:", err);
       console.error("Error response:", err.response?.data);
       console.error("Error status:", err.response?.status);
       console.error("Full error object:", err);
-      
+
       if (err.response?.status === 401) {
-        setError("You need to log in to view this profile. Redirecting to login...");
+        setError(
+          "You need to log in to view this profile. Redirecting to login..."
+        );
         // Redirect to login after a short delay
         setTimeout(() => {
-          window.location.href = '/login';
+          window.location.href = "/login";
         }, 2000);
       } else {
-        setError(err.response?.data?.message || err.message || "Failed to fetch employee data");
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            "Failed to fetch employee data"
+        );
       }
     } finally {
       setLoading(false);
@@ -133,7 +150,7 @@ export default function EmployeeProfile() {
         name: employee.name || "",
         contact: employee.contact || "",
         addSkills: [],
-        removeSkills: []
+        removeSkills: [],
       });
     }
   };
@@ -141,7 +158,7 @@ export default function EmployeeProfile() {
   const handleInputChange = (e) => {
     setEditForm({
       ...editForm,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -149,15 +166,20 @@ export default function EmployeeProfile() {
     if (newSkill.skillId && newSkill.yearsOfExperience) {
       setIsAddingSkill(true);
       try {
-        const skill = allSkills.find(s => s.id === parseInt(newSkill.skillId));
+        const skill = allSkills.find(
+          (s) => s.id === parseInt(newSkill.skillId)
+        );
         if (skill) {
           setEditForm({
             ...editForm,
-            addSkills: [...editForm.addSkills, {
-              skillId: parseInt(newSkill.skillId),
-              skillName: skill.name,
-              yearsOfExperience: parseInt(newSkill.yearsOfExperience)
-            }]
+            addSkills: [
+              ...editForm.addSkills,
+              {
+                skillId: parseInt(newSkill.skillId),
+                skillName: skill.name,
+                yearsOfExperience: parseInt(newSkill.yearsOfExperience),
+              },
+            ],
           });
           setNewSkill({ skillId: "", yearsOfExperience: 1 });
         }
@@ -170,7 +192,7 @@ export default function EmployeeProfile() {
   const removeSkillFromAddList = (skillId) => {
     setEditForm({
       ...editForm,
-      addSkills: editForm.addSkills.filter(s => s.skillId !== skillId)
+      addSkills: editForm.addSkills.filter((s) => s.skillId !== skillId),
     });
   };
 
@@ -178,7 +200,7 @@ export default function EmployeeProfile() {
     if (!editForm.removeSkills.includes(skillId)) {
       setEditForm({
         ...editForm,
-        removeSkills: [...editForm.removeSkills, skillId]
+        removeSkills: [...editForm.removeSkills, skillId],
       });
     }
   };
@@ -186,7 +208,7 @@ export default function EmployeeProfile() {
   const unmarkSkillForRemoval = (skillId) => {
     setEditForm({
       ...editForm,
-      removeSkills: editForm.removeSkills.filter(id => id !== skillId)
+      removeSkills: editForm.removeSkills.filter((id) => id !== skillId),
     });
   };
 
@@ -197,17 +219,31 @@ export default function EmployeeProfile() {
         name: editForm.name,
         contact: editForm.contact,
         addSkills: editForm.addSkills,
-        removeSkills: editForm.removeSkills
+        removeSkills: editForm.removeSkills,
       };
 
       await employeeAPI.updateProfile(employee.id, updateData);
-      
+
       // Refresh data
       await fetchData();
       setIsEditing(false);
-      alert("Profile updated successfully!");
+      setSuccessMessage("🎉 Profile updated successfully!");
+      setErrorMessage("");
+
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update profile");
+      setErrorMessage(
+        err.response?.data?.message || "❌ Failed to update profile"
+      );
+      setSuccessMessage("");
+
+      // Clear error message after 5 seconds
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 5000);
     } finally {
       setIsSaving(false);
     }
@@ -232,19 +268,80 @@ export default function EmployeeProfile() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
+        {/* Success Notification */}
+        {successMessage && (
+          <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center justify-between animate-pulse">
+            <span className="flex items-center">
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {successMessage}
+            </span>
+            <button
+              onClick={() => setSuccessMessage("")}
+              className="text-green-700 hover:text-green-900"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Error Notification */}
+        {errorMessage && (
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center justify-between">
+            <span className="flex items-center">
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {errorMessage}
+            </span>
+            <button
+              onClick={() => setErrorMessage("")}
+              className="text-red-700 hover:text-red-900"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex justify-between items-start">
             <div className="flex items-center space-x-4">
               {/* Avatar with initials */}
               <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                {employee?.name ? employee.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'U'}
+                {employee?.name
+                  ? employee.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()
+                  : "U"}
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">
                   {employee?.name || "Loading..."}
                 </h1>
-                <p className="text-lg text-gray-600 mt-2">{employee?.user?.email || ""}</p>
+                <p className="text-lg text-gray-600 mt-2">
+                  {employee?.user?.email || ""}
+                </p>
               </div>
             </div>
             {isCurrentUser && (
@@ -285,8 +382,10 @@ export default function EmployeeProfile() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Personal Information */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Personal Information</h2>
-            
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Personal Information
+            </h2>
+
             {isEditing ? (
               <div className="space-y-4">
                 <div>
@@ -331,23 +430,35 @@ export default function EmployeeProfile() {
               <div className="space-y-3">
                 <div>
                   <span className="font-medium text-gray-700">Name:</span>
-                  <span className="ml-2 text-gray-900">{employee?.name || "N/A"}</span>
+                  <span className="ml-2 text-gray-900">
+                    {employee?.name || "N/A"}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Email:</span>
-                  <span className="ml-2 text-gray-900">{employee?.user?.email || "N/A"}</span>
+                  <span className="ml-2 text-gray-900">
+                    {employee?.user?.email || "N/A"}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Contact:</span>
-                  <span className="ml-2 text-gray-900">{employee?.contact || "Not provided"}</span>
+                  <span className="ml-2 text-gray-900">
+                    {employee?.contact || "Not provided"}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Max Tasks:</span>
-                  <span className="ml-2 text-gray-900">{employee?.maxTasks || 0}</span>
+                  <span className="ml-2 text-gray-900">
+                    {employee?.maxTasks || 0}
+                  </span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Current Workload:</span>
-                  <span className="ml-2 text-gray-900">{employee?.currentWorkload || 0}</span>
+                  <span className="font-medium text-gray-700">
+                    Current Workload:
+                  </span>
+                  <span className="ml-2 text-gray-900">
+                    {employee?.currentWorkload || 0}
+                  </span>
                 </div>
               </div>
             )}
@@ -355,7 +466,9 @@ export default function EmployeeProfile() {
 
           {/* Statistics */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Statistics</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Statistics
+            </h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">
@@ -388,10 +501,12 @@ export default function EmployeeProfile() {
         {/* Skills Section */}
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Skills</h2>
-          
+
           {isEditing && isCurrentUser && (
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Add New Skill</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">
+                Add New Skill
+              </h3>
               <div className="mb-2 text-sm text-gray-600">
                 Available skills: {allSkills.length} loaded
               </div>
@@ -402,21 +517,27 @@ export default function EmployeeProfile() {
                   </label>
                   <select
                     value={newSkill.skillId}
-                    onChange={(e) => setNewSkill({...newSkill, skillId: e.target.value})}
+                    onChange={(e) =>
+                      setNewSkill({ ...newSkill, skillId: e.target.value })
+                    }
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select a skill</option>
                     {allSkills
-                      .filter(skill => 
-                        !(employee?.skills || []).some(es => es.skill.id === skill.id) &&
-                        !editForm.addSkills.some(as => as.skillId === skill.id)
+                      .filter(
+                        (skill) =>
+                          !(employee?.skills || []).some(
+                            (es) => es.skill.id === skill.id
+                          ) &&
+                          !editForm.addSkills.some(
+                            (as) => as.skillId === skill.id
+                          )
                       )
-                      .map(skill => (
+                      .map((skill) => (
                         <option key={skill.id} value={skill.id}>
                           {skill.name}
                         </option>
-                      ))
-                    }
+                      ))}
                   </select>
                 </div>
                 <div className="w-32">
@@ -428,7 +549,12 @@ export default function EmployeeProfile() {
                     min="1"
                     max="50"
                     value={newSkill.yearsOfExperience}
-                    onChange={(e) => setNewSkill({...newSkill, yearsOfExperience: e.target.value})}
+                    onChange={(e) =>
+                      setNewSkill({
+                        ...newSkill,
+                        yearsOfExperience: e.target.value,
+                      })
+                    }
                     className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -447,7 +573,9 @@ export default function EmployeeProfile() {
               {/* Skills to be added */}
               {editForm.addSkills.length > 0 && (
                 <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Skills to be added:</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    Skills to be added:
+                  </h4>
                   <div className="flex flex-wrap gap-2">
                     {editForm.addSkills.map((skill, index) => (
                       <span
@@ -482,14 +610,20 @@ export default function EmployeeProfile() {
                         : "bg-blue-100 text-blue-800"
                     }`}
                   >
-                    <span className="font-medium">{employeeSkill.skill.name}</span>
+                    <span className="font-medium">
+                      {employeeSkill.skill.name}
+                    </span>
                     <span className="ml-1 text-xs">
                       ({employeeSkill.yearsExperience} years)
                     </span>
                     {isEditing && isCurrentUser && (
                       <button
                         onClick={() => {
-                          if (editForm.removeSkills.includes(employeeSkill.skill.id)) {
+                          if (
+                            editForm.removeSkills.includes(
+                              employeeSkill.skill.id
+                            )
+                          ) {
                             unmarkSkillForRemoval(employeeSkill.skill.id);
                           } else {
                             markSkillForRemoval(employeeSkill.skill.id);
@@ -501,7 +635,9 @@ export default function EmployeeProfile() {
                             : "text-red-600"
                         }`}
                       >
-                        {editForm.removeSkills.includes(employeeSkill.skill.id) ? "↻" : "×"}
+                        {editForm.removeSkills.includes(employeeSkill.skill.id)
+                          ? "↻"
+                          : "×"}
                       </button>
                     )}
                   </div>
@@ -541,7 +677,8 @@ export default function EmployeeProfile() {
                       <div className="flex items-center gap-2 ml-3">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            project.status === "ACTIVE" || project.status === "IN_PROGRESS"
+                            project.status === "ACTIVE" ||
+                            project.status === "IN_PROGRESS"
                               ? "bg-green-100 text-green-800"
                               : project.status === "COMPLETED"
                               ? "bg-blue-100 text-blue-800"
@@ -552,14 +689,25 @@ export default function EmployeeProfile() {
                         >
                           {project.status}
                         </span>
-                        <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        <svg
+                          className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
                         </svg>
                       </div>
                     </div>
                     {project.deadline && (
                       <div className="mt-2 text-xs text-gray-500">
-                        Deadline: {new Date(project.deadline).toLocaleDateString()}
+                        Deadline:{" "}
+                        {new Date(project.deadline).toLocaleDateString()}
                       </div>
                     )}
                   </div>
@@ -568,8 +716,18 @@ export default function EmployeeProfile() {
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
                   </svg>
                 </div>
                 <p>No owned projects yet</p>
@@ -597,13 +755,15 @@ export default function EmployeeProfile() {
                           {projectMember.project.title}
                         </h3>
                         <p className="text-sm text-gray-600 line-clamp-2">
-                          {projectMember.project.description || "No description available"}
+                          {projectMember.project.description ||
+                            "No description available"}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 ml-3">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            projectMember.project.status === "ACTIVE" || projectMember.project.status === "IN_PROGRESS"
+                            projectMember.project.status === "ACTIVE" ||
+                            projectMember.project.status === "IN_PROGRESS"
                               ? "bg-green-100 text-green-800"
                               : projectMember.project.status === "COMPLETED"
                               ? "bg-blue-100 text-blue-800"
@@ -614,14 +774,25 @@ export default function EmployeeProfile() {
                         >
                           {projectMember.project.status}
                         </span>
-                        <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        <svg
+                          className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
                         </svg>
                       </div>
                     </div>
                     <div className="mt-2 flex justify-between items-center text-xs text-gray-500">
                       <span>
-                        Joined: {new Date(projectMember.joinedAt).toLocaleDateString()}
+                        Joined:{" "}
+                        {new Date(projectMember.joinedAt).toLocaleDateString()}
                       </span>
                       {projectMember.project.ownerId !== employee.id && (
                         <span className="text-blue-600">Team Member</span>
@@ -633,8 +804,18 @@ export default function EmployeeProfile() {
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
                   </svg>
                 </div>
                 <p>Not assigned to any projects yet</p>

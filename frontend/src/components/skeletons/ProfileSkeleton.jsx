@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const ProfileSkeleton = () => {
   return (
@@ -19,7 +19,7 @@ const ProfileSkeleton = () => {
             </div>
             {/* Edit/Save/Cancel buttons */}
             <div className="flex gap-2">
-              <div className="h-10 bg-green-300 rounded w-28 animate-pulse"></div>
+              <div className="h-10 bg-gray-300 rounded w-28 animate-pulse"></div>
               <div className="h-10 bg-gray-300 rounded w-20 animate-pulse"></div>
             </div>
           </div>
@@ -57,20 +57,20 @@ const ProfileSkeleton = () => {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="h-6 bg-gray-300 rounded w-20 mb-4 animate-pulse"></div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="h-8 bg-blue-300 rounded w-8 mx-auto mb-2 animate-pulse"></div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="h-8 bg-gray-300 rounded w-8 mx-auto mb-2 animate-pulse"></div>
                 <div className="h-4 bg-gray-300 rounded w-20 mx-auto animate-pulse"></div>
               </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="h-8 bg-green-300 rounded w-8 mx-auto mb-2 animate-pulse"></div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="h-8 bg-gray-300 rounded w-8 mx-auto mb-2 animate-pulse"></div>
                 <div className="h-4 bg-gray-300 rounded w-16 mx-auto animate-pulse"></div>
               </div>
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <div className="h-8 bg-purple-300 rounded w-8 mx-auto mb-2 animate-pulse"></div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="h-8 bg-gray-300 rounded w-8 mx-auto mb-2 animate-pulse"></div>
                 <div className="h-4 bg-gray-300 rounded w-24 mx-auto animate-pulse"></div>
               </div>
-              <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <div className="h-8 bg-orange-300 rounded w-8 mx-auto mb-2 animate-pulse"></div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <div className="h-8 bg-gray-300 rounded w-8 mx-auto mb-2 animate-pulse"></div>
                 <div className="h-4 bg-gray-300 rounded w-24 mx-auto animate-pulse"></div>
               </div>
             </div>
@@ -81,7 +81,7 @@ const ProfileSkeleton = () => {
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
           <div className="h-6 bg-gray-300 rounded w-16 mb-4 animate-pulse"></div>
           <div className="flex flex-wrap gap-2">
-            <div className="h-8 bg-blue-300 rounded-full w-32 animate-pulse"></div>
+            <div className="h-8 bg-gray-300 rounded-full w-32 animate-pulse"></div>
           </div>
         </div>
 
@@ -90,7 +90,7 @@ const ProfileSkeleton = () => {
           {/* Owned Projects */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 bg-purple-300 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-gray-300 rounded-full animate-pulse"></div>
               <div className="h-6 bg-gray-300 rounded w-32 animate-pulse"></div>
             </div>
             <div className="max-h-64 overflow-y-auto space-y-3">
@@ -101,7 +101,7 @@ const ProfileSkeleton = () => {
                     <div className="h-4 bg-gray-300 rounded w-full mb-1 animate-pulse"></div>
                   </div>
                   <div className="flex items-center gap-2 ml-3">
-                    <div className="h-6 bg-yellow-300 rounded-full w-20 animate-pulse"></div>
+                    <div className="h-6 bg-gray-300 rounded-full w-20 animate-pulse"></div>
                     <div className="h-4 w-4 bg-gray-300 rounded animate-pulse"></div>
                   </div>
                 </div>
@@ -113,25 +113,28 @@ const ProfileSkeleton = () => {
           {/* Working On */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 bg-orange-300 rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-gray-300 rounded-full animate-pulse"></div>
               <div className="h-6 bg-gray-300 rounded w-24 animate-pulse"></div>
             </div>
             <div className="max-h-64 overflow-y-auto space-y-3">
               {[...Array(2)].map((_, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-lg p-4"
+                >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="h-5 bg-gray-300 rounded w-20 mb-2 animate-pulse"></div>
                       <div className="h-4 bg-gray-300 rounded w-full mb-1 animate-pulse"></div>
                     </div>
                     <div className="flex items-center gap-2 ml-3">
-                      <div className="h-6 bg-yellow-300 rounded-full w-20 animate-pulse"></div>
+                      <div className="h-6 bg-gray-300 rounded-full w-20 animate-pulse"></div>
                       <div className="h-4 w-4 bg-gray-300 rounded animate-pulse"></div>
                     </div>
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <div className="h-3 bg-gray-300 rounded w-20 animate-pulse"></div>
-                    <div className="h-3 bg-blue-300 rounded w-16 animate-pulse"></div>
+                    <div className="h-3 bg-gray-300 rounded w-16 animate-pulse"></div>
                   </div>
                 </div>
               ))}

@@ -3,8 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { projectAPI } from "../services/projectAPI";
 
 import toast from "react-hot-toast";
-import { SuccessToast, ErrorToast, ConfirmToast } from "../components/CustomToasts";
-import LoadingOverlay from "../components/LoadingOverlay"; 
+import {
+  SuccessToast,
+  ErrorToast,
+  ConfirmToast,
+} from "../components/CustomToasts";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 const AdminProjects = () => {
   const navigate = useNavigate();
@@ -16,10 +20,27 @@ const AdminProjects = () => {
   const [priority, setPriority] = useState("LOW");
   const [startDate, setStartDate] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [dateError, setDateError] = useState("");
 
   const [loading, setLoading] = useState(false); // loading prior values
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Validate dates whenever they change
+  useEffect(() => {
+    if (startDate && deadline) {
+      const start = new Date(startDate);
+      const end = new Date(deadline);
+
+      if (start >= end) {
+        setDateError("Start date must be before the deadline");
+      } else {
+        setDateError("");
+      }
+    } else {
+      setDateError("");
+    }
+  }, [startDate, deadline]);
 
   useEffect(() => {
     if (isEditMode) {
@@ -30,8 +51,16 @@ const AdminProjects = () => {
           setTitle(project.title);
           setDescription(project.description);
           setPriority(project.priority);
-          setStartDate(project.startDate ? new Date(project.startDate).toISOString().slice(0, 10) : "");
-          setDeadline(project.deadline ? new Date(project.deadline).toISOString().slice(0, 10) : "");
+          setStartDate(
+            project.startDate
+              ? new Date(project.startDate).toISOString().slice(0, 10)
+              : ""
+          );
+          setDeadline(
+            project.deadline
+              ? new Date(project.deadline).toISOString().slice(0, 10)
+              : ""
+          );
         } catch (err) {
           console.error("❌ Error fetching project:", err);
         } finally {
@@ -45,6 +74,47 @@ const AdminProjects = () => {
   // ✅ Submit handler
   const handleSubmit = async () => {
     if (loading) return;
+
+    // Validation: Check if start date is before deadline
+    if (startDate && deadline) {
+      const start = new Date(startDate);
+      const end = new Date(deadline);
+
+      if (start >= end) {
+        toast.custom(
+          <ErrorToast
+            title="Invalid Dates"
+            message="Start date must be before the deadline."
+          />,
+          { position: "top-center", duration: 3500 }
+        );
+        return;
+      }
+    }
+
+    // Validation: Check required fields
+    if (!title.trim()) {
+      toast.custom(
+        <ErrorToast
+          title="Missing Title"
+          message="Project title is required."
+        />,
+        { position: "top-center", duration: 3500 }
+      );
+      return;
+    }
+
+    if (!description.trim()) {
+      toast.custom(
+        <ErrorToast
+          title="Missing Description"
+          message="Project description is required."
+        />,
+        { position: "top-center", duration: 3500 }
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -59,27 +129,37 @@ const AdminProjects = () => {
       if (isEditMode) {
         await projectAPI.update(id, payload);
 
-        toast.custom((
-          <SuccessToast title="Project Updated!" message="Your project has been updated successfully." />
-        ), { position: "top-center", duration: 3000 });
-                navigate(-1); // go back to previous page
-              } else {
-                await projectAPI.create(payload);
-                toast.custom((
-          <SuccessToast title="Project Created!" message="Your project has been added successfully." />
-        ), { position: "top-center", duration: 3000 });
-                navigate(-1); // go back to previous page
-
+        toast.custom(
+          <SuccessToast
+            title="Project Updated!"
+            message="Your project has been updated successfully."
+          />,
+          { position: "top-center", duration: 3000 }
+        );
+        navigate(-1); // go back to previous page
+      } else {
+        await projectAPI.create(payload);
+        toast.custom(
+          <SuccessToast
+            title="Project Created!"
+            message="Your project has been added successfully."
+          />,
+          { position: "top-center", duration: 3000 }
+        );
+        navigate(-1); // go back to previous page
       }
 
       navigate("/dashboard"); // redirect back to project list
     } catch (err) {
       console.error("❌ Error saving project:", err);
-      toast.custom((
-        <ErrorToast title="Save Failed" message="Something went wrong while saving." />
-      ), { position: "top-center", duration: 3500 });
-    }
-    finally {
+      toast.custom(
+        <ErrorToast
+          title="Save Failed"
+          message="Something went wrong while saving."
+        />,
+        { position: "top-center", duration: 3500 }
+      );
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -93,7 +173,11 @@ const AdminProjects = () => {
 
         {/* Project Form */}
         <div className="relative">
-          <div className={`bg-white shadow-lg rounded-lg p-6 mb-8 border border-gray-200 ${loading ? "opacity-60" : ""}`}>
+          <div
+            className={`bg-white shadow-lg rounded-lg p-6 mb-8 border border-gray-200 ${
+              loading ? "opacity-60" : ""
+            }`}
+          >
             <h2 className="text-xl font-semibold mb-4 text-blue-900">
               Project Details
             </h2>
@@ -118,26 +202,46 @@ const AdminProjects = () => {
                 <option value="CRITICAL">Critical Priority</option>
               </select>
               <div>
-                <label className="block text-sm font-medium mb-1">Start Date</label>
+                <label className="block text-sm font-medium mb-1">
+                  Start Date
+                </label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg"
+                  className={`w-full p-3 border-2 rounded-lg ${
+                    dateError
+                      ? "border-red-300 focus:border-red-500"
+                      : "border-gray-200"
+                  }`}
                   disabled={loading}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Deadline</label>
+                <label className="block text-sm font-medium mb-1">
+                  Deadline
+                </label>
                 <input
                   type="date"
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full p-3 border-2 border-gray-200 rounded-lg"
+                  className={`w-full p-3 border-2 rounded-lg ${
+                    dateError
+                      ? "border-red-300 focus:border-red-500"
+                      : "border-gray-200"
+                  }`}
                   disabled={loading}
                 />
               </div>
             </div>
+
+            {/* Date Error Message */}
+            {dateError && (
+              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm font-medium">{dateError}</p>
+              </div>
+            )}
+
             <textarea
               placeholder="Project Description"
               value={description}
@@ -152,7 +256,9 @@ const AdminProjects = () => {
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-900 border-t-transparent mx-auto mb-4" />
-                <div className="text-gray-700 font-medium">Loading project details…</div>
+                <div className="text-gray-700 font-medium">
+                  Loading project details…
+                </div>
               </div>
             </div>
           )}
@@ -186,12 +292,13 @@ const AdminProjects = () => {
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                 {isEditMode ? "Updating..." : "Creating..."}
               </>
+            ) : isEditMode ? (
+              "Update Project"
             ) : (
-              isEditMode ? "Update Project" : "Create Project"
+              "Create Project"
             )}
           </button>
         </div>
-
       </div>
     </div>
   );

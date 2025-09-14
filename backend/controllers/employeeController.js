@@ -134,7 +134,9 @@ export const getEmployeeById = async (req, res) => {
       user: { select: { id: true, username: true, email: true } },
       skills: { include: { skill: { select: { id: true, name: true } } } },
       assignedTasks: {
-        include: { project: { select: { id: true, title: true, status: true } } },
+        include: {
+          project: { select: { id: true, title: true, status: true } },
+        },
         where: { status: { not: "COMPLETED" } },
       },
       projectMembers: {
@@ -153,10 +155,22 @@ export const getEmployeeById = async (req, res) => {
         },
       },
       createdProjects: {
-        select: { id: true, title: true, description: true, status: true, deadline: true },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          status: true,
+          deadline: true,
+        },
       },
       ownedProjects: {
-        select: { id: true, title: true, description: true, status: true, deadline: true },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          status: true,
+          deadline: true,
+        },
       },
     };
 
@@ -171,7 +185,9 @@ export const getEmployeeById = async (req, res) => {
     }
 
     // statistics (unchanged)
-    const totalTasks = await prisma.task.count({ where: { employeeId: employee.id } });
+    const totalTasks = await prisma.task.count({
+      where: { employeeId: employee.id },
+    });
     const completedTasks = await prisma.task.count({
       where: { employeeId: employee.id, status: "COMPLETED" },
     });

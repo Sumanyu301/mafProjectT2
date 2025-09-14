@@ -38,6 +38,13 @@ export async function createProject(req, res) {
       return res.status(400).json({ error: "Invalid deadline format" });
     }
 
+    // Validate that start date is before deadline
+    if (parsedStartDate >= parsedDeadline) {
+      return res.status(400).json({
+        error: "Start date must be before the deadline",
+      });
+    }
+
     const project = await prisma.project.create({
       data: {
         title,
@@ -244,8 +251,11 @@ export async function updateProject(req, res) {
     if (priority !== undefined) updateData.priority = priority;
     if (status !== undefined) updateData.status = status;
 
+    let parsedStartDate = null;
+    let parsedDeadline = null;
+
     if (startDate !== undefined) {
-      const parsedStartDate = new Date(startDate);
+      parsedStartDate = new Date(startDate);
       if (isNaN(parsedStartDate.getTime())) {
         return res.status(400).json({ error: "Invalid start date format" });
       }
@@ -253,11 +263,22 @@ export async function updateProject(req, res) {
     }
 
     if (deadline !== undefined) {
-      const parsedDeadline = new Date(deadline);
+      parsedDeadline = new Date(deadline);
       if (isNaN(parsedDeadline.getTime())) {
         return res.status(400).json({ error: "Invalid deadline format" });
       }
       updateData.deadline = parsedDeadline;
+    }
+
+    // Validate that start date is before deadline
+    // Use existing dates if new ones aren't provided
+    const finalStartDate = parsedStartDate || existingProject.startDate;
+    const finalDeadline = parsedDeadline || existingProject.deadline;
+
+    if (finalStartDate && finalDeadline && finalStartDate >= finalDeadline) {
+      return res.status(400).json({
+        error: "Start date must be before the deadline",
+      });
     }
 
     // ✅ Update project fields first
