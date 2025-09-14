@@ -49,7 +49,7 @@ function Navbar() {
         className="flex justify-center cursor-pointer"
       >
         <img
-          src="src/assets/mafLogo-bgremoved.png"
+          src="/mafLogo-bgremoved.png"
           className="h-20 w-30 text-white"
         />
         <h1 className="text-2xl pt-6 font-bold">Project Allocation Portal</h1>

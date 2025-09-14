@@ -120,7 +120,7 @@ function AuthForm({ title, onSubmit, buttonText, isLoading }) {
       <div className="bg-gray-50 border border-gray-200 rounded-2xl shadow-lg p-8 transform hover:scale-[1.01] transition-all duration-300">
         <div className="text-center mb-8">
           <div className="flex justify-center">
-            <img src="src/assets/maf_logo-removebg-preview.png" className="h-20 w-30 text-white" />
+            <img src="/maf_logo-removebg-preview.png" className="h-20 w-30 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-blue-900 mb-2">{title}</h2>
           <p className="text-gray-600">
