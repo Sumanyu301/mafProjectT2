@@ -86,10 +86,11 @@ export async function loginUser(req, res) {
     });
 
     // Send token in HTTP-only cookie
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // use true in production (HTTPS)
-      sameSite: "None", // allow cross-site cookies (Vercel + Render setup)
+      secure: isProduction, // HTTPS only in production
+      sameSite: isProduction ? "None" : "Lax", // Cross-site cookies for production
       maxAge: 1000 * 60 * 60 * 6, // 6 hours
     });
 
@@ -103,10 +104,11 @@ export async function loginUser(req, res) {
 // ------------------------------------------------------------------------------------------------------------
 
 export async function logoutUser(req, res) {
+  const isProduction = process.env.NODE_ENV === "production";
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true,
-    sameSite: "None",
+    secure: isProduction,
+    sameSite: isProduction ? "None" : "Lax",
   });
   res.status(200).json({ message: "Logged out successfully" });
 }
@@ -122,7 +124,7 @@ export async function verifyUser(req, res) {
     res.status(200).json({
       message: "Protected data",
       id: decoded.id,
-      email: decoded.email
+      email: decoded.email,
     });
   });
 }

@@ -16,7 +16,11 @@ import { employeeAPI } from "../services/employeeAPI";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 import toast from "react-hot-toast";
-import { SuccessToast, ErrorToast, ConfirmToast } from "../components/CustomToasts";
+import {
+  SuccessToast,
+  ErrorToast,
+  ConfirmToast,
+} from "../components/CustomToasts";
 import ProjectDetailsSkeleton from "../components/ProjectDetailsSkeleton";
 
 function ProjectDetailsPage() {
@@ -48,11 +52,9 @@ function ProjectDetailsPage() {
       try {
         const data = await authAPI.verify();
         setUserId(data.id);
-        
+
         // Get employee data for the current user
         const employeeData = await employeeAPI.getMyProfile();
-        console.log("Current user Employee ID:", employeeData.id);
-        console.log("Current user data:", employeeData);
         setEmployeeId(employeeData.id);
       } catch (err) {
         console.error("Failed to verify user or get employee data:", err);
@@ -79,11 +81,11 @@ function ProjectDetailsPage() {
   const isCreator = Boolean(
     project && project.creator && project.creator.id === employeeId
   );
-  
+
   const isOwner = Boolean(
     project && project.owner && project.owner.id === employeeId
   );
-  
+
   const isProjectManager = isCreator || isOwner;
 
   // Load tasks for project
@@ -147,7 +149,9 @@ function ProjectDetailsPage() {
 
   const tasksByStatus = {};
   statusColumns.forEach((col) => {
-    tasksByStatus[col.id] = tasks.filter((t) => String(t.status) === String(col.id));
+    tasksByStatus[col.id] = tasks.filter(
+      (t) => String(t.status) === String(col.id)
+    );
   });
 
   // Helpers for colors
@@ -252,19 +256,30 @@ function ProjectDetailsPage() {
       priority: editTask.priority,
       status: editTask.status,
       // map UI assigneeId to backend field employeeId
-      employeeId: editTask.assigneeId === "" ? null : Number(editTask.assigneeId),
+      employeeId:
+        editTask.assigneeId === "" ? null : Number(editTask.assigneeId),
     };
 
     try {
       if (editTask.id) {
         const updated = await taskAPI.updateTask(editTask.id, payload);
-        const normalized = { ...updated, assigneeId: updated.employeeId == null ? "" : Number(updated.employeeId) };
-        setTasks((prev) => prev.map((t) => (Number(t.id) === Number(normalized.id) ? normalized : t)));
+        const normalized = {
+          ...updated,
+          assigneeId:
+            updated.employeeId == null ? "" : Number(updated.employeeId),
+        };
+        setTasks((prev) =>
+          prev.map((t) =>
+            Number(t.id) === Number(normalized.id) ? normalized : t
+          )
+        );
 
         // ensure assigned employee appears in project members immediately
         if (normalized.assigneeId) {
           const empId = Number(normalized.assigneeId);
-          const alreadyMember = project?.members?.some((m) => Number(m.id) === empId);
+          const alreadyMember = project?.members?.some(
+            (m) => Number(m.id) === empId
+          );
           if (!alreadyMember) {
             // try to find in allEmployees, otherwise fetch by id
             let assignedEmp = allEmployees.find((e) => Number(e.id) === empId);
@@ -276,19 +291,28 @@ function ProjectDetailsPage() {
               }
             }
             if (assignedEmp) {
-              setProject((prev) => ({ ...prev, members: [...(prev?.members || []), assignedEmp] }));
+              setProject((prev) => ({
+                ...prev,
+                members: [...(prev?.members || []), assignedEmp],
+              }));
             }
           }
         }
       } else {
         const created = await taskAPI.createTask(project.id, payload);
-        const normalized = { ...created, assigneeId: created.employeeId == null ? "" : Number(created.employeeId) };
+        const normalized = {
+          ...created,
+          assigneeId:
+            created.employeeId == null ? "" : Number(created.employeeId),
+        };
         setTasks((prev) => [...prev, normalized]);
 
         // ensure assigned employee appears in project members immediately
         if (normalized.assigneeId) {
           const empId = Number(normalized.assigneeId);
-          const alreadyMember = project?.members?.some((m) => Number(m.id) === empId);
+          const alreadyMember = project?.members?.some(
+            (m) => Number(m.id) === empId
+          );
           if (!alreadyMember) {
             let assignedEmp = allEmployees.find((e) => Number(e.id) === empId);
             if (!assignedEmp) {
@@ -299,7 +323,10 @@ function ProjectDetailsPage() {
               }
             }
             if (assignedEmp) {
-              setProject((prev) => ({ ...prev, members: [...(prev?.members || []), assignedEmp] }));
+              setProject((prev) => ({
+                ...prev,
+                members: [...(prev?.members || []), assignedEmp],
+              }));
             }
           }
         }
@@ -329,7 +356,6 @@ function ProjectDetailsPage() {
     if (!originalTask) return;
 
     const isAssignee = String(originalTask.assigneeId) === String(employeeId);
-    console.log("Permission check - Task assigneeId:", originalTask.assigneeId, "Current employeeId:", employeeId, "isAssignee:", isAssignee);
     // allow if assignee OR project creator/owner
     if (!isAssignee && !isProjectManager) {
       toast.error("Only the assignee or project manager can move this task");
@@ -353,19 +379,26 @@ function ProjectDetailsPage() {
       console.error("Failed to update task status", err);
       // revert optimistic change
       setTasks((prev) =>
-        prev.map((t) =>
-          String(t.id) === String(taskId) ? originalTask : t
-        )
+        prev.map((t) => (String(t.id) === String(taskId) ? originalTask : t))
       );
-      toast.custom(<ErrorToast title="Move Failed" message="Failed to update task status" />, { position: "top-center", duration: 3000 });
+      toast.custom(
+        <ErrorToast
+          title="Move Failed"
+          message="Failed to update task status"
+        />,
+        { position: "top-center", duration: 3000 }
+      );
     }
   };
 
- // Render assignee as clickable name (hover underline) that navigates to profile
- const renderAssignee = (task) => {
+  // Render assignee as clickable name (hover underline) that navigates to profile
+  const renderAssignee = (task) => {
     const assigneeId = task?.assigneeId;
-    if (assigneeId === "" || assigneeId == null) return <span className="italic">Unassigned</span>;
-    const member = project?.members?.find((m) => Number(m.id) === Number(assigneeId));
+    if (assigneeId === "" || assigneeId == null)
+      return <span className="italic">Unassigned</span>;
+    const member = project?.members?.find(
+      (m) => Number(m.id) === Number(assigneeId)
+    );
     if (!member) return <span>Unassigned</span>;
     const profileId = member.user?.id ?? member.id;
     return (
@@ -373,68 +406,69 @@ function ProjectDetailsPage() {
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          navigate(`/profile/${profileId}`)}
-        }
+          navigate(`/profile/${profileId}`);
+        }}
         className="text-blue-700 hover:underline focus:outline-none"
       >
         {member.name}
       </button>
     );
- };
-  
+  };
+
   const handleDeleteProject = async () => {
-  toast.custom(
-    (t) => (
-      <ConfirmToast
-        title="Delete Project?"
-        message="Are you sure you want to delete this project? This action cannot be undone."
-        onConfirm={async () => {
-          toast.dismiss(t.id); // close confirm toast
-          try {
-            setIsDeleting(true);
-            await projectAPI.delete(id); // call API
-            toast.custom(
-              <SuccessToast
-                title="Project Deleted!"
-                message="The project was removed successfully."
-              />,
-              { position: "top-center", duration: 3000 }
-            );
-            navigate("/dashboard"); // go back to projects list
-          } catch (err) {
-            console.error("❌ Error deleting project:", err);
-            toast.custom(
-              <ErrorToast
-                title="Delete Failed"
-                message={err.response?.data?.error || "Failed to delete project"}
-              />,
-              { position: "top-center", duration: 3500 }
-            );
-          } finally {
-            setIsDeleting(false);
-          }
-        }}
-        onCancel={() => toast.dismiss(t.id)}
-      />
-    ),
-    { position: "top-center", duration: 5000 }
-  );
-};
+    toast.custom(
+      (t) => (
+        <ConfirmToast
+          title="Delete Project?"
+          message="Are you sure you want to delete this project? This action cannot be undone."
+          onConfirm={async () => {
+            toast.dismiss(t.id); // close confirm toast
+            try {
+              setIsDeleting(true);
+              await projectAPI.delete(id); // call API
+              toast.custom(
+                <SuccessToast
+                  title="Project Deleted!"
+                  message="The project was removed successfully."
+                />,
+                { position: "top-center", duration: 3000 }
+              );
+              navigate("/dashboard"); // go back to projects list
+            } catch (err) {
+              console.error("❌ Error deleting project:", err);
+              toast.custom(
+                <ErrorToast
+                  title="Delete Failed"
+                  message={
+                    err.response?.data?.error || "Failed to delete project"
+                  }
+                />,
+                { position: "top-center", duration: 3500 }
+              );
+            } finally {
+              setIsDeleting(false);
+            }
+          }}
+          onCancel={() => toast.dismiss(t.id)}
+        />
+      ),
+      { position: "top-center", duration: 5000 }
+    );
+  };
 
-
-    const createdByName =
+  const createdByName =
     project?.creator?.name ??
     project?.creator?.user?.username ??
     project?.createdBy ??
     "—";
 
   if (loading) {
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
-      <ProjectDetailsSkeleton />
-    </div>
-  );
-}
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+        <ProjectDetailsSkeleton />
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -447,31 +481,52 @@ function ProjectDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="p-4 sm:p-8 max-w-6xl mx-auto">
-        <button onClick={() => navigate(-1)} className="flex items-center text-blue-900 hover:text-blue-700 mb-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-blue-900 hover:text-blue-700 mb-4"
+        >
           <ArrowLeft className="h-5 w-5 mr-2" />
           Back
         </button>
 
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200 mb-8">
-          <h1 className="text-3xl font-bold text-blue-900 mb-2">{project.title}</h1>
-          <p className="text-gray-700 text-lg leading-relaxed">{project.description}</p>
+          <h1 className="text-3xl font-bold text-blue-900 mb-2">
+            {project.title}
+          </h1>
+          <p className="text-gray-700 text-lg leading-relaxed">
+            {project.description}
+          </p>
           <div className="flex flex-wrap gap-3 my-6">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(project.status)}`}>
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                project.status
+              )}`}
+            >
               {project.status}
             </span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(project.priority)}`}>
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(
+                project.priority
+              )}`}
+            >
               {project.priority} Priority
             </span>
           </div>
 
           <div className="mb-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700">Project Progress</span>
-              <span className="text-sm font-semibold text-blue-900">{derivedProgress}%</span>
+              <span className="text-sm font-medium text-gray-700">
+                Project Progress
+              </span>
+              <span className="text-sm font-semibold text-blue-900">
+                {derivedProgress}%
+              </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div
-                className={`h-3 rounded-full transition-all duration-300 ${getProgressColor(derivedProgress)}`}
+                className={`h-3 rounded-full transition-all duration-300 ${getProgressColor(
+                  derivedProgress
+                )}`}
                 style={{ width: `${derivedProgress}%` }}
               />
             </div>
@@ -479,10 +534,30 @@ function ProjectDetailsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <InfoCard icon={Calendar} label="Start Date" value={new Date(project.startDate).toLocaleDateString()} color="text-blue-900" />
-          <InfoCard icon={Clock} label="Deadline" value={new Date(project.deadline).toLocaleDateString()} color="text-red-600" />
-          <InfoCard icon={Target} label="Created By" value={createdByName} color="text-blue-900" />
-          <InfoCard icon={Users} label="Team Size" value={`${project.members?.length ?? 0} Members`} color="text-blue-900" />
+          <InfoCard
+            icon={Calendar}
+            label="Start Date"
+            value={new Date(project.startDate).toLocaleDateString()}
+            color="text-blue-900"
+          />
+          <InfoCard
+            icon={Clock}
+            label="Deadline"
+            value={new Date(project.deadline).toLocaleDateString()}
+            color="text-red-600"
+          />
+          <InfoCard
+            icon={Target}
+            label="Created By"
+            value={createdByName}
+            color="text-blue-900"
+          />
+          <InfoCard
+            icon={Users}
+            label="Team Size"
+            value={`${project.members?.length ?? 0} Members`}
+            color="text-blue-900"
+          />
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
@@ -491,7 +566,11 @@ function ProjectDetailsPage() {
             <div className="text-sm text-gray-700">
               <span className="font-semibold">{tasks.length}</span> tasks ·{" "}
               <span className="font-semibold">
-                {tasks.filter((t) => String(t.status).toUpperCase() === "COMPLETED").length}
+                {
+                  tasks.filter(
+                    (t) => String(t.status).toUpperCase() === "COMPLETED"
+                  ).length
+                }
               </span>{" "}
               completed
             </div>
@@ -520,7 +599,9 @@ function ProjectDetailsPage() {
                       >
                         <div className="font-bold mb-2 text-blue-900 flex items-center justify-between">
                           <span>{col.label}</span>
-                          <span className="text-xs text-gray-500">{tasksByStatus[col.id].length}</span>
+                          <span className="text-xs text-gray-500">
+                            {tasksByStatus[col.id].length}
+                          </span>
                         </div>
 
                         {tasksByStatus[col.id].length === 0 ? (
@@ -528,9 +609,11 @@ function ProjectDetailsPage() {
                             No tasks
                           </div>
                         ) : (
-                            tasksByStatus[col.id].map((task, idx) => {
-                            const isAssignee = String(task.assigneeId) === String(employeeId);
-                            const isDraggable = isAssignee || Boolean(isProjectManager);
+                          tasksByStatus[col.id].map((task, idx) => {
+                            const isAssignee =
+                              String(task.assigneeId) === String(employeeId);
+                            const isDraggable =
+                              isAssignee || Boolean(isProjectManager);
                             return (
                               <Draggable
                                 key={task.id}
@@ -542,15 +625,21 @@ function ProjectDetailsPage() {
                                   <div
                                     ref={prov.innerRef}
                                     {...prov.draggableProps}
-                                    {...(isDraggable ? prov.dragHandleProps : {})}
+                                    {...(isDraggable
+                                      ? prov.dragHandleProps
+                                      : {})}
                                     className={`mb-3 border rounded p-3 shadow-sm transition ${
                                       isDraggable
                                         ? "bg-blue-50 cursor-grab hover:bg-blue-100"
                                         : "bg-gray-50 cursor-not-allowed opacity-90"
                                     }`}
-                                    onClick={() => isProjectManager && handleEditTask(task)}
+                                    onClick={() =>
+                                      isProjectManager && handleEditTask(task)
+                                    }
                                   >
-                                    <div className="font-medium">{task.title}</div>
+                                    <div className="font-medium">
+                                      {task.title}
+                                    </div>
                                     <div className="text-xs text-gray-600">
                                       {task.priority} · {renderAssignee(task)}
                                     </div>
@@ -567,7 +656,8 @@ function ProjectDetailsPage() {
                   </Droppable>
                 ))}
               </div>
-            </DragDropContext>)}
+            </DragDropContext>
+          )}
         </div>
 
         {/* Add / Edit Task Modal */}
@@ -620,30 +710,35 @@ function ProjectDetailsPage() {
 
                   {/* Members list */}
                   <div className="max-h-32 overflow-y-auto flex flex-col gap-2">
-                  {allEmployees
-                    .filter((emp) =>
-                      emp.name.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                    .map((emp) => {
-                      const isSelected = Number(editTask?.assigneeId) === Number(emp.id);
-                      return (
-                        <button
-                          type="button"
-                          key={emp.id}
-                          className={`flex items-center justify-between px-3 py-2 rounded-lg border ${
-                            isSelected
-                              ? "bg-blue-600 text-white border-blue-700"
-                              : "bg-gray-100 text-blue-900 border-gray-300 hover:bg-gray-200"
-                          }`}
-                          onClick={() => handleAssignMember(emp.id)}
-                        >
-                          <span>{emp.name}</span>
-                          {isSelected && (
-                            <span className="text-xs font-medium">Selected</span>
-                          )}
-                        </button>
-                      );
-                    })}
+                    {allEmployees
+                      .filter((emp) =>
+                        emp.name
+                          .toLowerCase()
+                          .includes(searchTerm.toLowerCase())
+                      )
+                      .map((emp) => {
+                        const isSelected =
+                          Number(editTask?.assigneeId) === Number(emp.id);
+                        return (
+                          <button
+                            type="button"
+                            key={emp.id}
+                            className={`flex items-center justify-between px-3 py-2 rounded-lg border ${
+                              isSelected
+                                ? "bg-blue-600 text-white border-blue-700"
+                                : "bg-gray-100 text-blue-900 border-gray-300 hover:bg-gray-200"
+                            }`}
+                            onClick={() => handleAssignMember(emp.id)}
+                          >
+                            <span>{emp.name}</span>
+                            {isSelected && (
+                              <span className="text-xs font-medium">
+                                Selected
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
                   </div>
                 </div>
 
@@ -661,18 +756,22 @@ function ProjectDetailsPage() {
                   </button>
                   <button
                     type="submit"
-                    className={`flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg ${saveTaskLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg ${
+                      saveTaskLoading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                     disabled={saveTaskLoading}
                   >
                     <Pencil size={16} />
                     {saveTaskLoading ? "Saving..." : "Save Task"}
-                   </button>
+                  </button>
 
                   {/* Delete button (owner only, visible when editing) */}
                   {isProjectManager && editTask?.id && (
                     <button
                       type="button"
-                      className={`flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg ${isDeletingTask ? "opacity-50 cursor-not-allowed" : ""}`}
+                      className={`flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg ${
+                        isDeletingTask ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
                       onClick={() => handleDeleteTask(editTask.id)}
                       disabled={isDeletingTask}
                     >
@@ -686,17 +785,27 @@ function ProjectDetailsPage() {
           </div>
         )}
 
-
         {/* Admin actions */}
         {isCreator && (
           <div className="mt-8 bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold text-blue-900 mb-4">Admin Actions</h3>
+            <h3 className="text-lg font-semibold text-blue-900 mb-4">
+              Admin Actions
+            </h3>
             <div className="flex flex-wrap gap-4">
-              <button className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg" onClick={() => navigate(`/edit-project/${project.id}`)}>
+              <button
+                className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg"
+                onClick={() => navigate(`/edit-project/${project.id}`)}
+              >
                 <Pencil size={16} />
                 Edit Project
               </button>
-              <button onClick={handleDeleteProject} className={`flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg ${isDeleting ? "opacity-50 cursor-not-allowed" : ""}`} disabled={isDeleting}>
+              <button
+                onClick={handleDeleteProject}
+                className={`flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg ${
+                  isDeleting ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                disabled={isDeleting}
+              >
                 <Trash2 size={16} />
                 {isDeleting ? "Deleting..." : "Delete Project"}
               </button>
