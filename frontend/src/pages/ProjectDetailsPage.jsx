@@ -38,6 +38,7 @@ function ProjectDetailsPage() {
   const searchInputRef = useRef(null);
 
   const [userId, setUserId] = useState(null);
+  const [employeeId, setEmployeeId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [saveTaskLoading, setSaveTaskLoading] = useState(false);
   const [isDeletingTask, setIsDeletingTask] = useState(false);
@@ -47,8 +48,12 @@ function ProjectDetailsPage() {
       try {
         const data = await authAPI.verify();
         setUserId(data.id);
+        
+        // Get employee data for the current user
+        const employeeData = await employeeAPI.getMyProfile();
+        setEmployeeId(employeeData.id);
       } catch (err) {
-        console.error("Failed to verify user:", err);
+        console.error("Failed to verify user or get employee data:", err);
       }
     };
     fetchUser();
@@ -70,8 +75,14 @@ function ProjectDetailsPage() {
   }, [id]);
 
   const isCreator = Boolean(
-    project && project.creator && project.creator.id === userId
+    project && project.creator && project.creator.id === employeeId
   );
+  
+  const isOwner = Boolean(
+    project && project.owner && project.owner.id === employeeId
+  );
+  
+  const isProjectManager = isCreator || isOwner;
 
   // Load tasks for project
   useEffect(() => {
@@ -114,7 +125,7 @@ function ProjectDetailsPage() {
 
   // Fetch all employees when modal opens (owner only)
   useEffect(() => {
-    if (showTaskModal && isCreator) {
+    if (showTaskModal && isProjectManager) {
       employeeAPI
         .getAll()
         .then((res) => {
@@ -122,7 +133,7 @@ function ProjectDetailsPage() {
         })
         .catch(() => setAllEmployees([]));
     }
-  }, [showTaskModal, isCreator]);
+  }, [showTaskModal, isProjectManager]);
 
   const statusColumns = [
     { id: "TODO", label: "To Do" },
@@ -315,10 +326,10 @@ function ProjectDetailsPage() {
     const originalTask = tasks.find((t) => String(t.id) === String(taskId));
     if (!originalTask) return;
 
-    const isAssignee = String(originalTask.assigneeId) === String(userId);
-    // allow if assignee OR project owner
-    if (!isAssignee && !isCreator) {
-      toast.error("Only the assignee or project owner can move this task");
+    const isAssignee = String(originalTask.employeeId) === String(employeeId);
+    // allow if assignee OR project creator/owner
+    if (!isAssignee && !isProjectManager) {
+      toast.error("Only the assignee or project manager can move this task");
       return;
     }
 
@@ -478,7 +489,7 @@ function ProjectDetailsPage() {
               </span>{" "}
               completed
             </div>
-            {isCreator && (
+            {isProjectManager && (
               <button
                 onClick={handleAddTaskClick}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-sm"
@@ -512,8 +523,8 @@ function ProjectDetailsPage() {
                           </div>
                         ) : (
                             tasksByStatus[col.id].map((task, idx) => {
-                            const isAssignee = String(task.assigneeId) === String(userId);
-                            const isDraggable = isAssignee || Boolean(isCreator);
+                            const isAssignee = String(task.employeeId) === String(employeeId);
+                            const isDraggable = isAssignee || Boolean(isProjectManager);
                             return (
                               <Draggable
                                 key={task.id}
@@ -531,7 +542,7 @@ function ProjectDetailsPage() {
                                         ? "bg-blue-50 cursor-grab hover:bg-blue-100"
                                         : "bg-gray-50 cursor-not-allowed opacity-90"
                                     }`}
-                                    onClick={() => isCreator && handleEditTask(task)}
+                                    onClick={() => isProjectManager && handleEditTask(task)}
                                   >
                                     <div className="font-medium">{task.title}</div>
                                     <div className="text-xs text-gray-600">
@@ -652,7 +663,7 @@ function ProjectDetailsPage() {
                    </button>
 
                   {/* Delete button (owner only, visible when editing) */}
-                  {isCreator && editTask?.id && (
+                  {isProjectManager && editTask?.id && (
                     <button
                       type="button"
                       className={`flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg ${isDeletingTask ? "opacity-50 cursor-not-allowed" : ""}`}
