@@ -51,6 +51,8 @@ function ProjectDetailsPage() {
         
         // Get employee data for the current user
         const employeeData = await employeeAPI.getMyProfile();
+        console.log("Current user Employee ID:", employeeData.id);
+        console.log("Current user data:", employeeData);
         setEmployeeId(employeeData.id);
       } catch (err) {
         console.error("Failed to verify user or get employee data:", err);
@@ -326,7 +328,8 @@ function ProjectDetailsPage() {
     const originalTask = tasks.find((t) => String(t.id) === String(taskId));
     if (!originalTask) return;
 
-    const isAssignee = String(originalTask.employeeId) === String(employeeId);
+    const isAssignee = String(originalTask.assigneeId) === String(employeeId);
+    console.log("Permission check - Task assigneeId:", originalTask.assigneeId, "Current employeeId:", employeeId, "isAssignee:", isAssignee);
     // allow if assignee OR project creator/owner
     if (!isAssignee && !isProjectManager) {
       toast.error("Only the assignee or project manager can move this task");
@@ -526,7 +529,7 @@ function ProjectDetailsPage() {
                           </div>
                         ) : (
                             tasksByStatus[col.id].map((task, idx) => {
-                            const isAssignee = String(task.employeeId) === String(employeeId);
+                            const isAssignee = String(task.assigneeId) === String(employeeId);
                             const isDraggable = isAssignee || Boolean(isProjectManager);
                             return (
                               <Draggable
