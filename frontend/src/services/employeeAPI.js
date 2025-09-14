@@ -21,7 +21,7 @@ export const employeeAPI = {
 
   // ✅ Get current user's profile
   getMyProfile: async () => {
-    const res = await axios.get(`${API_URL}/api/employees/my-profile`, {
+    const res = await axios.get(`${API_URL}/api/employees/me`, {
       withCredentials: true,
     });
     return res.data;

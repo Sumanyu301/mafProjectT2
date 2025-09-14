@@ -126,6 +126,7 @@ function ProjectsPage() {
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
+            
             <div
               key={project.id}
               className="cursor-pointer bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:shadow-lg p-6 transition-all duration-200 hover:border-blue-300 transform hover:scale-[1.02] group"
@@ -183,7 +184,14 @@ function ProjectsPage() {
                   </div>
                   <div className="flex items-center text-xs text-gray-500">
                     <Target className="h-4 w-4 mr-1" />
-                    <span>{project.createdBy || "—"}</span>
+                    <span>
+                      {
+                        project?.creator?.name ??
+                        project?.creator?.user?.username ??
+                        project?.createdBy ??
+                        "—"
+                      }
+                    </span>
                   </div>
                 </div>
 

@@ -16,7 +16,7 @@ function App() {
     <ProjectProvider>
       <Router>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           
           <Route element={<Layout />}>
@@ -44,7 +44,7 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            <Route path="/" element={<ProjectsPage />} />
+            <Route path="/dashboard" element={<ProjectsPage />} />
             <Route path="/projects/:id" element={<ProjectDetailsPage />} />
 
             <Route path="/profile" element={<EmployeeProfile />} />

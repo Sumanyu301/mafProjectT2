@@ -19,7 +19,7 @@ const router = express.Router();
 // All employee routes require authentication
 router.post("/", verifyToken, createEmployee);
 router.get("/", verifyToken, getAllEmployees);
-router.get("/my-profile", verifyToken, getMyProfile);
+// router.get("/my-profile", verifyToken, getMyProfile);
 router.get("/booking-status", verifyToken, getAllEmployeesBookingStatus);
 router.get("/available", verifyToken, getAvailableEmployees);
 router.get("/workload", verifyToken, getTeamWorkload);
