@@ -219,13 +219,13 @@ function ProjectsPage() {
                     {project.title}
                   </h2>
                   <div className="mt-1 flex items-center gap-2">
-                    <span
+                    {/* <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
                         project.status
                       )}`}
                     >
                       {project.status || "Planning"}
-                    </span>
+                    </span> */}
                     {project.priority && (
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getPriorityColor(
