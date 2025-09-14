@@ -124,9 +124,8 @@ export const getEmployeeById = async (req, res) => {
       if (Number.isNaN(parsed)) {
         return res.status(400).json({ error: "Invalid id" });
       }
-      where = {
-        OR: [{ id: parsed }, { userId: parsed }],
-      };
+      where = { id: parsed };
+      
     }
 
     // common include definition to avoid duplication
