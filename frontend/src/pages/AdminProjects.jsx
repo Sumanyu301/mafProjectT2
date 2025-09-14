@@ -72,7 +72,7 @@ const AdminProjects = () => {
 
       }
 
-      navigate("/"); // redirect back to project list
+      navigate("/dashboard"); // redirect back to project list
     } catch (err) {
       console.error("❌ Error saving project:", err);
       toast.custom((
@@ -152,7 +152,7 @@ const AdminProjects = () => {
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-900 border-t-transparent mx-auto mb-4" />
-                <div className="text-gray-700 font-medium">Loading project…</div>
+                <div className="text-gray-700 font-medium">Loading project details…</div>
               </div>
             </div>
           )}

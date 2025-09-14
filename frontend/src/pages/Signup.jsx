@@ -34,7 +34,7 @@ const handleSignup = async (data) => {
 
     console.log("Signup success:", res);
 
-    setTimeout(() => navigate("/login"), 1500);
+    setTimeout(() => navigate("/"), 1500);
   } catch (err) {
     setError(err.response?.data?.message || err.message || "Signup failed");
   } finally {
@@ -53,51 +53,51 @@ const handleSignup = async (data) => {
 
       <div className="relative z-10 p-10 bg-gray-50 flex flex-col lg:flex-row min-h-screen">
         {/* Left side - Features */}
-<div className="lg:w-1/2 flex flex-col justify-center p-12 lg:p-16 bg-gray-50">
-  <div className="max-w-lg mx-auto lg:mx-0 text-4xl lg:text-6xl">
-    <h1 className="text-4xl lg:text-6xl font-bold text-blue-900 mb-6 leading-tight">
-      MAF
-      <span className="text-red-600"> Project Allocation</span>
-    </h1>
+        <div className="lg:w-1/2 flex flex-col justify-center p-12 lg:p-16 bg-gray-50">
+          <div className="max-w-lg mx-auto lg:mx-0 text-4xl lg:text-6xl">
+            <h1 className="text-4xl lg:text-6xl font-bold text-blue-900 mb-6 leading-tight">
+              MAF
+              <span className="text-red-600"> Project Allocation</span>
+            </h1>
 
-    <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-      Sign up today to streamline team management, optimize workloads,
-      and ensure the right people work on the right projects.
-    </p>
+            <p className="text-xl text-gray-700 mb-8 leading-relaxed">
+              Sign up today to streamline team management, optimize workloads,
+              and ensure the right people work on the right projects.
+            </p>
 
-    {/* Feature list */}
-    <div className="space-y-4 mb-8">
-      {[
-        {
-          icon: UserCheck,
-          text: "Skill-based Employee Allocation",
-        },
-        // {
-        //   icon: BarChart,
-        //   text: "Track Workload & Availability",
-        // },
-        {
-          icon: ClipboardList,
-          text: "Simplified Project Assignments",
-        },
-        {
-          icon: Clock,
-          text: "Real-time Monitoring & Updates",
-        },
-      ].map((feature, index) => (
-        <div
-          key={index}
-          className="flex items-center space-x-3 text-gray-700"
-        >
-          <div className="bg-blue-900 p-2 rounded-lg">
-            <feature.icon className="h-5 w-5 text-white" />
+            {/* Feature list */}
+            <div className="space-y-4 mb-8">
+              {[
+                {
+                  icon: UserCheck,
+                  text: "Skill-based Employee Allocation",
+                },
+                // {
+                //   icon: BarChart,
+                //   text: "Track Workload & Availability",
+                // },
+                {
+                  icon: ClipboardList,
+                  text: "Simplified Project Assignments",
+                },
+                {
+                  icon: Clock,
+                  text: "Real-time Monitoring & Updates",
+                },
+              ].map((feature, index) => (
+                <div
+                  key={index}
+                  className="flex items-center space-x-3 text-gray-700"
+                >
+                  <div className="bg-blue-900 p-2 rounded-lg">
+                    <feature.icon className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="text-lg font-medium">{feature.text}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <span className="text-lg font-medium">{feature.text}</span>
         </div>
-      ))}
-    </div>
-  </div>
-</div>
 
 
         {/* Right side - Auth form */}
@@ -123,7 +123,7 @@ const handleSignup = async (data) => {
               </p>
 
               <Link
-                to="/login"
+                to="/"
                 className="inline-flex items-center justify-center w-full bg-blue-900 hover:bg-blue-800 text-white py-3 px-6 rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] shadow-sm hover:shadow-md group"
               >
                 <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />

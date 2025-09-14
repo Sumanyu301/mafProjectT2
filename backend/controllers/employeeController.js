@@ -107,24 +107,92 @@ export const getAllEmployees = async (req, res) => {
   }
 };
 
-// Get Employee by ID
+// Get Employee by ID (accepts "me", userId or employee id) and return same shape as getMyProfile
 export const getEmployeeById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const employee = await prisma.employee.findUnique({
-      where: { userId: Number(id) },
-      include: {
-        user: {
-          select: { id: true, username: true, email: true },
-        },
-        skills: { include: { skill: true } },
-        assignedTasks: { include: { project: true } },
-        projectMembers: { include: { project: true } },
+    const rawId = req.params.id;
+
+    // build a single `where` condition that handles:
+    // - "me" -> lookup by current user's userId
+    // - numeric id -> lookup by employee.id OR employee.userId
+    // - otherwise -> reject as invalid
+    let where;
+    if (rawId === "me") {
+      where = { userId: req.user.id };
+    } else {
+      const parsed = Number(rawId);
+      if (Number.isNaN(parsed)) {
+        return res.status(400).json({ error: "Invalid id" });
+      }
+      where = {
+        OR: [{ id: parsed }, { userId: parsed }],
+      };
+    }
+
+    // common include definition to avoid duplication
+    const commonInclude = {
+      user: { select: { id: true, username: true, email: true } },
+      skills: { include: { skill: { select: { id: true, name: true } } } },
+      assignedTasks: {
+        include: { project: { select: { id: true, title: true, status: true } } },
+        where: { status: { not: "COMPLETED" } },
       },
+      projectMembers: {
+        select: {
+          joinedAt: true,
+          project: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              status: true,
+              deadline: true,
+              ownerId: true,
+            },
+          },
+        },
+      },
+      createdProjects: {
+        select: { id: true, title: true, description: true, status: true, deadline: true },
+      },
+      ownedProjects: {
+        select: { id: true, title: true, description: true, status: true, deadline: true },
+      },
+    };
+
+    // single query using the composed where + include
+    const employee = await prisma.employee.findFirst({
+      where,
+      include: commonInclude,
     });
-    if (!employee) return res.status(404).json({ error: "Employee not found" });
-    res.json(employee);
+
+    if (!employee) {
+      return res.status(404).json({ error: "Employee not found" });
+    }
+
+    // statistics (unchanged)
+    const totalTasks = await prisma.task.count({ where: { employeeId: employee.id } });
+    const completedTasks = await prisma.task.count({
+      where: { employeeId: employee.id, status: "COMPLETED" },
+    });
+
+    const ownedProjectsCount = (employee.ownedProjects || []).length;
+    const memberProjectsCount = (employee.projectMembers || []).length;
+
+    const profileData = {
+      ...employee,
+      statistics: {
+        totalTasks,
+        completedTasks,
+        ownedProjects: ownedProjectsCount,
+        memberProjects: memberProjectsCount,
+        totalProjects: ownedProjectsCount + memberProjectsCount,
+      },
+    };
+
+    res.json(profileData);
   } catch (error) {
+    console.error("getEmployeeById error:", error);
     res.status(500).json({ error: error.message });
   }
 };

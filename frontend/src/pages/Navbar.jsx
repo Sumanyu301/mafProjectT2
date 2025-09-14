@@ -23,7 +23,7 @@ function Navbar() {
   const handleLogout = async () => {
     try {
       await authAPI.logout();
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       console.error("Logout failed", err);
     }
@@ -43,17 +43,17 @@ function Navbar() {
   };
 
   return (
-    <nav className="flex justify-between items-center p-4 bg-blue-900 text-white">
-    <div
-      onClick={() => navigate("/")}
-      className="flex justify-center cursor-pointer"
-    >
-      <img
-        src="src/assets/mafLogo-bgremoved.png"
-        className="h-20 w-30 text-white"
-      />
-      <h1 className="text-2xl pt-6 font-bold">Project Allocation Portal</h1>
-    </div>
+    <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center p-4 bg-blue-900 text-white shadow-md">
+      <div
+        onClick={() => navigate("/dashboard")}
+        className="flex justify-center cursor-pointer"
+      >
+        <img
+          src="src/assets/mafLogo-bgremoved.png"
+          className="h-20 w-30 text-white"
+        />
+        <h1 className="text-2xl pt-6 font-bold">Project Allocation Portal</h1>
+      </div>
 
       <div className="flex items-center space-x-3">
         {/* User Avatar / Initials */}

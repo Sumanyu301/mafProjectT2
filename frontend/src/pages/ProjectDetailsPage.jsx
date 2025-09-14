@@ -13,7 +13,6 @@ import { authAPI } from "../services/authAPI";
 import { projectAPI } from "../services/projectAPI";
 import { taskAPI } from "../services/taskAPI";
 import { employeeAPI } from "../services/employeeAPI";
-// import { projectEmpAPI } from "../services/projectEmpAPI";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 import toast from "react-hot-toast";
@@ -302,45 +301,49 @@ function ProjectDetailsPage() {
     }
   };
 
-
-  // Drag and drop update of status (members can drag their assigned tasks; backend should enforce permissions)
   const onDragEnd = async (result) => {
-    if (!result.destination) return;
-    const taskId = result.draggableId;
-    const newStatus = result.destination.droppableId;
+    const { destination, source, draggableId } = result;
+    if (!destination) return;
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
 
-    // optimistic update
-    setTasks((prev) => prev.map((t) => (String(t.id) === String(taskId) ? { ...t, status: newStatus } : t)));
+    const taskId = draggableId;
+    const originalTask = tasks.find((t) => String(t.id) === String(taskId));
+    if (!originalTask) return;
+
+    const isAssignee = String(originalTask.assigneeId) === String(userId);
+    // allow if assignee OR project owner
+    if (!isAssignee && !isCreator) {
+      toast.error("Only the assignee or project owner can move this task");
+      return;
+    }
+
+    const newStatus = destination.droppableId;
+
+    // optimistic update: set new status locally
+    setTasks((prev) =>
+      prev.map((t) =>
+        String(t.id) === String(taskId) ? { ...t, status: newStatus } : t
+      )
+    );
+
     try {
+      // keep API call consistent with other places
       await taskAPI.updateTask(taskId, { status: newStatus });
+      // toast.custom(<SuccessToast title="Task moved" message="Task status updated" />, { position: "top-center", duration: 2000 });
     } catch (err) {
       console.error("Failed to update task status", err);
-      // optional: reload tasks or revert
-    }
-  };
-
-  // UI helpers
-  // const getAssigneeName = (task) => {
-  //   const assigneeId = task?.assigneeId;
-  //   if (assigneeId === "" || assigneeId == null) return "Unassigned";
-  //   // project.members should be an array of employee objects with `id` and `name`
-  //   const member = project?.members?.find(
-  //     (m) => Number(m.id) === Number(assigneeId)
-  //   );
-  //   return member ? member.name : "Unassigned";
-  // };
-
-  const handleDeleteProject = async () => {
-    if (!window.confirm("Are you sure you want to delete this project?")) return;
-    try {
-      setIsDeleting(true);
-      await projectAPI.delete(id);
-      navigate("/");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete project");
-    } finally {
-      setIsDeleting(false);
+      // revert optimistic change
+      setTasks((prev) =>
+        prev.map((t) =>
+          String(t.id) === String(taskId) ? originalTask : t
+        )
+      );
+      toast.custom(<ErrorToast title="Move Failed" message="Failed to update task status" />, { position: "top-center", duration: 3000 });
     }
   };
 
@@ -350,58 +353,63 @@ function ProjectDetailsPage() {
     if (assigneeId === "" || assigneeId == null) return <span className="italic">Unassigned</span>;
     const member = project?.members?.find((m) => Number(m.id) === Number(assigneeId));
     if (!member) return <span>Unassigned</span>;
+    const profileId = member.user?.id ?? member.id;
     return (
       <button
         type="button"
-        onClick={() => navigate(`/profile/${member.id}`)}
+        onClick={() => navigate(`/profile/${profileId}`)}
         className="text-blue-700 hover:underline focus:outline-none"
       >
         {member.name}
       </button>
     );
  };
-
-//   const [isDeleting, setIsDeleting] = useState(false);
   
-//   const handleDelete = async () => {
-//   toast.custom(
-//     (t) => (
-//       <ConfirmToast
-//         title="Delete Project?"
-//         message="Are you sure you want to delete this project? This action cannot be undone."
-//         onConfirm={async () => {
-//           toast.dismiss(t.id); // close confirm toast
-//           try {
-//             setIsDeleting(true);
-//             await projectAPI.delete(id); // call API
-//             toast.custom(
-//               <SuccessToast
-//                 title="Project Deleted!"
-//                 message="The project was removed successfully."
-//               />,
-//               { position: "top-center", duration: 3000 }
-//             );
-//             navigate("/"); // go back to projects list
-//           } catch (err) {
-//             console.error("❌ Error deleting project:", err);
-//             toast.custom(
-//               <ErrorToast
-//                 title="Delete Failed"
-//                 message={err.response?.data?.error || "Failed to delete project"}
-//               />,
-//               { position: "top-center", duration: 3500 }
-//             );
-//           } finally {
-//             setIsDeleting(false);
-//           }
-//         }}
-//         onCancel={() => toast.dismiss(t.id)}
-//       />
-//     ),
-//     { position: "top-center", duration: 5000 }
-//   );
-// };
+  const handleDeleteProject = async () => {
+  toast.custom(
+    (t) => (
+      <ConfirmToast
+        title="Delete Project?"
+        message="Are you sure you want to delete this project? This action cannot be undone."
+        onConfirm={async () => {
+          toast.dismiss(t.id); // close confirm toast
+          try {
+            setIsDeleting(true);
+            await projectAPI.delete(id); // call API
+            toast.custom(
+              <SuccessToast
+                title="Project Deleted!"
+                message="The project was removed successfully."
+              />,
+              { position: "top-center", duration: 3000 }
+            );
+            navigate("/dashboard"); // go back to projects list
+          } catch (err) {
+            console.error("❌ Error deleting project:", err);
+            toast.custom(
+              <ErrorToast
+                title="Delete Failed"
+                message={err.response?.data?.error || "Failed to delete project"}
+              />,
+              { position: "top-center", duration: 3500 }
+            );
+          } finally {
+            setIsDeleting(false);
+          }
+        }}
+        onCancel={() => toast.dismiss(t.id)}
+      />
+    ),
+    { position: "top-center", duration: 5000 }
+  );
+};
 
+
+    const createdByName =
+    project?.creator?.name ??
+    project?.creator?.user?.username ??
+    project?.createdBy ??
+    "—";
 
   if (loading) {
   return (
@@ -456,7 +464,7 @@ function ProjectDetailsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <InfoCard icon={Calendar} label="Start Date" value={new Date(project.startDate).toLocaleDateString()} color="text-blue-900" />
           <InfoCard icon={Clock} label="Deadline" value={new Date(project.deadline).toLocaleDateString()} color="text-red-600" />
-          <InfoCard icon={Target} label="Created By" value={project.createdBy} color="text-blue-900" />
+          <InfoCard icon={Target} label="Created By" value={createdByName} color="text-blue-900" />
           <InfoCard icon={Users} label="Team Size" value={`${project.members?.length ?? 0} Members`} color="text-blue-900" />
         </div>
 
@@ -503,24 +511,37 @@ function ProjectDetailsPage() {
                             No tasks
                           </div>
                         ) : (
-                          tasksByStatus[col.id].map((task, idx) => (
-                            <Draggable key={task.id} draggableId={String(task.id)} index={idx}>
-                              {(prov) => (
-                                <div
-                                  ref={prov.innerRef}
-                                  {...prov.draggableProps}
-                                  {...prov.dragHandleProps}
-                                  className="mb-3 bg-blue-50 border border-blue-200 rounded p-3 shadow-sm cursor-pointer hover:bg-blue-100 transition"
-                                  onClick={() => isCreator && handleEditTask(task)}
-                                >
-                                  <div className="font-medium">{task.title}</div>
-                                  <div className="text-xs text-gray-600">
-                                    {task.priority} · {renderAssignee(task)}
+                            tasksByStatus[col.id].map((task, idx) => {
+                            const isAssignee = String(task.assigneeId) === String(userId);
+                            const isDraggable = isAssignee || Boolean(isCreator);
+                            return (
+                              <Draggable
+                                key={task.id}
+                                draggableId={String(task.id)}
+                                index={idx}
+                                isDragDisabled={!isDraggable}
+                              >
+                                {(prov) => (
+                                  <div
+                                    ref={prov.innerRef}
+                                    {...prov.draggableProps}
+                                    {...(isDraggable ? prov.dragHandleProps : {})}
+                                    className={`mb-3 border rounded p-3 shadow-sm transition ${
+                                      isDraggable
+                                        ? "bg-blue-50 cursor-grab hover:bg-blue-100"
+                                        : "bg-gray-50 cursor-not-allowed opacity-90"
+                                    }`}
+                                    onClick={() => isCreator && handleEditTask(task)}
+                                  >
+                                    <div className="font-medium">{task.title}</div>
+                                    <div className="text-xs text-gray-600">
+                                      {task.priority} · {renderAssignee(task)}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
-                            </Draggable>
-                          ))
+                                )}
+                              </Draggable>
+                            );
+                          })
                         )}
 
                         {provided.placeholder}
