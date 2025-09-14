@@ -71,8 +71,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use("*", (req, res) => {
+// 404 handler - Fix for Express v5 compatibility
+app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
