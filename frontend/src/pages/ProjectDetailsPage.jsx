@@ -662,128 +662,116 @@ function ProjectDetailsPage() {
 
         {/* Add / Edit Task Modal */}
         {showTaskModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto">
-              <h3 className="text-lg font-semibold mb-4">
-                {editTask?.id ? "Edit Task" : "Add Task"}
-              </h3>
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4 sm:p-6">
+    <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 flex flex-col">
+      <h3 className="text-lg font-semibold mb-4 text-center sm:text-left">
+        {editTask?.id ? "Edit Task" : "Add Task"}
+      </h3>
 
-              <form onSubmit={handleSaveTask} className="flex flex-col h-full">
-                {/* Task Title */}
-                <input
-                  type="text"
-                  className="w-full border rounded p-2 mb-3"
-                  placeholder="Task Title"
-                  value={editTask?.title || ""}
-                  onChange={(e) =>
-                    setEditTask((t) => ({ ...t, title: e.target.value }))
-                  }
-                  required
-                />
+      <form onSubmit={handleSaveTask} className="flex flex-col flex-grow">
+        {/* Task Title */}
+        <input
+          type="text"
+          className="w-full border rounded p-2 mb-4 sm:mb-3"
+          placeholder="Task Title"
+          value={editTask?.title || ""}
+          onChange={(e) => setEditTask((t) => ({ ...t, title: e.target.value }))}
+          required
+        />
 
-                {/* Priority */}
-                <select
-                  className="w-full border rounded p-2 mb-3"
-                  value={editTask?.priority || "MEDIUM"}
-                  onChange={(e) =>
-                    setEditTask((t) => ({ ...t, priority: e.target.value }))
-                  }
-                >
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                  <option value="CRITICAL">Critical</option>
-                </select>
+        {/* Priority */}
+        <select
+          className="w-full border rounded p-2 mb-4 sm:mb-3"
+          value={editTask?.priority || "MEDIUM"}
+          onChange={(e) => setEditTask((t) => ({ ...t, priority: e.target.value }))}
+        >
+          <option value="LOW">Low</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HIGH">High</option>
+          <option value="CRITICAL">Critical</option>
+        </select>
 
-                {/* Assign To */}
-                <div className="mb-4">
-                  <div className="font-semibold mb-2">Assign to:</div>
+        {/* Assign To */}
+        <div className="mb-4 flex flex-col">
+          <div className="font-semibold mb-2">Assign to:</div>
 
-                  {/* Search Input */}
-                  <input
-                    type="text"
-                    placeholder="Search members..."
-                    className="w-full border rounded p-2 mb-3"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+          {/* Search Input */}
+          <input
+            type="text"
+            placeholder="Search members..."
+            className="w-full border rounded p-2 mb-3"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
 
-                  {/* Members list */}
-                  <div className="max-h-32 overflow-y-auto flex flex-col gap-2">
-                    {allEmployees
-                      .filter((emp) =>
-                        emp.name
-                          .toLowerCase()
-                          .includes(searchTerm.toLowerCase())
-                      )
-                      .map((emp) => {
-                        const isSelected =
-                          Number(editTask?.assigneeId) === Number(emp.id);
-                        return (
-                          <button
-                            type="button"
-                            key={emp.id}
-                            className={`flex items-center justify-between px-3 py-2 rounded-lg border ${
-                              isSelected
-                                ? "bg-blue-600 text-white border-blue-700"
-                                : "bg-gray-100 text-blue-900 border-gray-300 hover:bg-gray-200"
-                            }`}
-                            onClick={() => handleAssignMember(emp.id)}
-                          >
-                            <span>{emp.name}</span>
-                            {isSelected && (
-                              <span className="text-xs font-medium">
-                                Selected
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                  </div>
-                </div>
-
-                {/* Action buttons at bottom right */}
-                <div className="flex justify-end gap-2 mt-auto">
+          {/* Members list */}
+          <div className="max-h-40 overflow-y-auto flex flex-col gap-2">
+            {allEmployees
+              .filter((emp) => emp.name.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map((emp) => {
+                const isSelected = Number(editTask?.assigneeId) === Number(emp.id);
+                return (
                   <button
                     type="button"
-                    className="px-4 py-2 rounded bg-gray-200"
-                    onClick={() => {
-                      setShowTaskModal(false);
-                      setEditTask(null);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className={`flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg ${
-                      saveTaskLoading ? "opacity-50 cursor-not-allowed" : ""
+                    key={emp.id}
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg border ${
+                      isSelected
+                        ? "bg-blue-600 text-white border-blue-700"
+                        : "bg-gray-100 text-blue-900 border-gray-300 hover:bg-gray-200"
                     }`}
-                    disabled={saveTaskLoading}
+                    onClick={() => handleAssignMember(emp.id)}
                   >
-                    <Pencil size={16} />
-                    {saveTaskLoading ? "Saving..." : "Save Task"}
+                    <span>{emp.name}</span>
+                    {isSelected && <span className="text-xs font-medium">Selected</span>}
                   </button>
-
-                  {/* Delete button (owner only, visible when editing) */}
-                  {isProjectManager && editTask?.id && (
-                    <button
-                      type="button"
-                      className={`flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg ${
-                        isDeletingTask ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
-                      onClick={() => handleDeleteTask(editTask.id)}
-                      disabled={isDeletingTask}
-                    >
-                      <Trash2 size={16} />
-                      {isDeletingTask ? "Deleting..." : "Delete Task"}
-                    </button>
-                  )}
-                </div>
-              </form>
-            </div>
+                );
+              })}
           </div>
-        )}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end mt-auto">
+          <button
+            type="button"
+            className="w-full sm:w-auto px-4 py-2 rounded bg-gray-200"
+            onClick={() => {
+              setShowTaskModal(false);
+              setEditTask(null);
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saveTaskLoading}
+            className={`w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg transition-opacity duration-200 ${
+              saveTaskLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            <Pencil size={16} />
+            {saveTaskLoading ? "Saving..." : "Save Task"}
+          </button>
+
+          {/* Delete button (owner only, visible when editing) */}
+          {isProjectManager && editTask?.id && (
+            <button
+              type="button"
+              disabled={isDeletingTask}
+              onClick={() => handleDeleteTask(editTask.id)}
+              className={`w-full sm:w-auto flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-opacity duration-200 ${
+                isDeletingTask ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              <Trash2 size={16} />
+              {isDeletingTask ? "Deleting..." : "Delete Task"}
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
 
         {/* Admin actions */}
         {isCreator && (

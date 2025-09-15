@@ -617,155 +617,147 @@ export default function EmployeeProfile() {
         </div>
 
         {/* Skills Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Skills</h2>
+<div className="bg-white rounded-lg shadow-md p-6 mt-6">
+  <h2 className="text-xl font-semibold text-gray-900 mb-4">Skills</h2>
 
-          {isEditing && isCurrentUser && (
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-medium text-gray-900 mb-3">
-                Add New Skill
-              </h3>
-              <div className="mb-2 text-sm text-gray-600">
-                Available skills: {allSkills.length} loaded
-              </div>
-              <div className="flex gap-4 items-end">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Skill
-                  </label>
-                  <select
-                    value={newSkill.skillId}
-                    onChange={(e) =>
-                      setNewSkill({ ...newSkill, skillId: e.target.value })
-                    }
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select a skill</option>
-                    {allSkills
-                      .filter(
-                        (skill) =>
-                          !(employee?.skills || []).some(
-                            (es) => es.skill.id === skill.id
-                          ) &&
-                          !editForm.addSkills.some(
-                            (as) => as.skillId === skill.id
-                          )
-                      )
-                      .map((skill) => (
-                        <option key={skill.id} value={skill.id}>
-                          {skill.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div className="w-32">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Years
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="50"
-                    value={newSkill.yearsOfExperience}
-                    onChange={(e) =>
-                      setNewSkill({
-                        ...newSkill,
-                        yearsOfExperience: e.target.value,
-                      })
-                    }
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <button
-                  onClick={addSkillToList}
-                  disabled={isAddingSkill || !newSkill.skillId}
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {isAddingSkill && (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  )}
-                  {isAddingSkill ? "Adding..." : "Add"}
-                </button>
-              </div>
-
-              {/* Skills to be added */}
-              {editForm.addSkills.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Skills to be added:
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {editForm.addSkills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
-                      >
-                        {skill.skillName} ({skill.yearsOfExperience} years)
-                        <button
-                          onClick={() => removeSkillFromAddList(skill.skillId)}
-                          className="ml-2 text-green-600 hover:text-green-800"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+  {/* Add New Skill Form (only in edit mode and if current user) */}
+  {isEditing && isCurrentUser && (
+    <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-4">
+      <h3 className="text-lg font-medium text-gray-900">Add New Skill</h3>
+      <div className="mb-2 text-sm text-gray-600">
+        Available skills: {allSkills.length} loaded
+      </div>
+      <div className="flex flex-col gap-3 sm:flex-row items-end">
+        <div className="flex-1 w-full">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Skill
+          </label>
+          <select
+            value={newSkill.skillId}
+            onChange={(e) =>
+              setNewSkill({ ...newSkill, skillId: e.target.value })
+            }
+            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select a skill</option>
+            {allSkills
+              .filter(
+                (skill) =>
+                  !(employee?.skills || []).some(
+                    (es) => es.skill.id === skill.id
+                  ) &&
+                  !editForm.addSkills.some((as) => as.skillId === skill.id)
+              )
+              .map((skill) => (
+                <option key={skill.id} value={skill.id}>
+                  {skill.name}
+                </option>
+              ))}
+          </select>
+        </div>
+        <div className="w-full sm:w-32">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Years
+          </label>
+          <input
+            type="number"
+            min="1"
+            max="50"
+            value={newSkill.yearsOfExperience}
+            onChange={(e) =>
+              setNewSkill({
+                ...newSkill,
+                yearsOfExperience: e.target.value,
+              })
+            }
+            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <button
+          onClick={addSkillToList}
+          disabled={isAddingSkill || !newSkill.skillId}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full sm:w-auto"
+        >
+          {isAddingSkill && (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
           )}
+          {isAddingSkill ? "Adding..." : "Add"}
+        </button>
+      </div>
 
-          {/* Current Skills */}
-          <div className="space-y-3">
-            {employee.skills && employee.skills.length > 0 ? (
-              <div className="flex flex-wrap gap-3">
-                {employee.skills.map((employeeSkill) => (
-                  <div
-                    key={employeeSkill.id}
-                    className={`inline-flex items-center px-3 py-2 rounded-full text-sm ${
-                      editForm.removeSkills.includes(employeeSkill.skill.id)
-                        ? "bg-red-100 text-red-800 line-through"
-                        : "bg-blue-100 text-blue-800"
-                    }`}
-                  >
-                    <span className="font-medium">
-                      {employeeSkill.skill.name}
-                    </span>
-                    <span className="ml-1 text-xs">
-                      ({employeeSkill.yearsExperience} years)
-                    </span>
-                    {isEditing && isCurrentUser && (
-                      <button
-                        onClick={() => {
-                          if (
-                            editForm.removeSkills.includes(
-                              employeeSkill.skill.id
-                            )
-                          ) {
-                            unmarkSkillForRemoval(employeeSkill.skill.id);
-                          } else {
-                            markSkillForRemoval(employeeSkill.skill.id);
-                          }
-                        }}
-                        className={`ml-2 hover:scale-110 ${
-                          editForm.removeSkills.includes(employeeSkill.skill.id)
-                            ? "text-gray-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {editForm.removeSkills.includes(employeeSkill.skill.id)
-                          ? "↻"
-                          : "×"}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 italic">No skills added yet</p>
-            )}
+      {/* Skills to be added */}
+      {editForm.addSkills.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">
+            Skills to be added:
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {editForm.addSkills.map((skill, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+              >
+                {skill.skillName} ({skill.yearsOfExperience} years)
+                <button
+                  onClick={() => removeSkillFromAddList(skill.skillId)}
+                  className="ml-2 text-green-600 hover:text-green-800"
+                >
+                  ×
+                </button>
+              </span>
+            ))}
           </div>
         </div>
+      )}
+    </div>
+  )}
+
+  {/* Current Skills */}
+  <div className="space-y-3">
+    {employee.skills && employee.skills.length > 0 ? (
+      <div className="flex flex-wrap gap-3">
+        {employee.skills.map((employeeSkill) => (
+          <div
+            key={employeeSkill.id}
+            className={`inline-flex items-center px-3 py-2 rounded-full text-sm ${
+              editForm.removeSkills.includes(employeeSkill.skill.id)
+                ? "bg-red-100 text-red-800 line-through"
+                : "bg-blue-100 text-blue-800"
+            }`}
+          >
+            <span className="font-medium">{employeeSkill.skill.name}</span>
+            <span className="ml-1 text-xs">
+              ({employeeSkill.yearsExperience} years)
+            </span>
+            {isEditing && isCurrentUser && (
+              <button
+                onClick={() => {
+                  if (editForm.removeSkills.includes(employeeSkill.skill.id)) {
+                    unmarkSkillForRemoval(employeeSkill.skill.id);
+                  } else {
+                    markSkillForRemoval(employeeSkill.skill.id);
+                  }
+                }}
+                className={`ml-2 hover:scale-110 ${
+                  editForm.removeSkills.includes(employeeSkill.skill.id)
+                    ? "text-gray-600"
+                    : "text-red-600"
+                }`}
+              >
+                {editForm.removeSkills.includes(employeeSkill.skill.id)
+                  ? "↻"
+                  : "×"}
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p className="text-gray-500 italic">No skills added yet</p>
+    )}
+  </div>
+</div>
+
 
         {/* Projects Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">

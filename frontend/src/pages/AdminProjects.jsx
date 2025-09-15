@@ -165,142 +165,134 @@ const AdminProjects = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="p-8 max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-blue-900">
-          {isEditMode ? "Edit Project" : "Create Project"}
-        </h1>
+<div className="min-h-screen bg-gray-50">
+  <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+    <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-blue-900">
+      {isEditMode ? "Edit Project" : "Create Project"}
+    </h1>
 
-        {/* Project Form */}
-        <div className="relative">
-          <div
-            className={`bg-white shadow-lg rounded-lg p-6 mb-8 border border-gray-200 ${
-              loading ? "opacity-60" : ""
-            }`}
+    {/* Project Form */}
+    <div className="relative">
+      <div
+        className={`bg-white shadow-lg rounded-lg p-6 mb-8 border border-gray-200 ${
+          loading ? "opacity-60" : ""
+        }`}
+      >
+        <h2 className="text-xl font-semibold mb-4 text-blue-900">
+          Project Details
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            type="text"
+            placeholder="Project Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full p-3 border-2 border-gray-200 rounded-lg"
+            disabled={loading}
+          />
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            className="w-full p-3 border-2 border-gray-200 rounded-lg"
+            disabled={loading}
           >
-            <h2 className="text-xl font-semibold mb-4 text-blue-900">
-              Project Details
-            </h2>
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="Project Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="p-3 border-2 border-gray-200 rounded-lg"
-                disabled={loading}
-              />
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-                className="p-3 border-2 border-gray-200 rounded-lg"
-                disabled={loading}
-              >
-                <option value="LOW">Low Priority</option>
-                <option value="MEDIUM">Medium Priority</option>
-                <option value="HIGH">High Priority</option>
-                <option value="CRITICAL">Critical Priority</option>
-              </select>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className={`w-full p-3 border-2 rounded-lg ${
-                    dateError
-                      ? "border-red-300 focus:border-red-500"
-                      : "border-gray-200"
-                  }`}
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Deadline
-                </label>
-                <input
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className={`w-full p-3 border-2 rounded-lg ${
-                    dateError
-                      ? "border-red-300 focus:border-red-500"
-                      : "border-gray-200"
-                  }`}
-                  disabled={loading}
-                />
-              </div>
-            </div>
+            <option value="LOW">Low Priority</option>
+            <option value="MEDIUM">Medium Priority</option>
+            <option value="HIGH">High Priority</option>
+            <option value="CRITICAL">Critical Priority</option>
+          </select>
 
-            {/* Date Error Message */}
-            {dateError && (
-              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-sm font-medium">{dateError}</p>
-              </div>
-            )}
-
-            <textarea
-              placeholder="Project Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3 border-2 border-gray-200 rounded-lg mt-4"
-              rows="3"
+          <div>
+            <label className="block text-sm font-medium mb-1">Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className={`w-full p-3 border-2 rounded-lg ${
+                dateError ? "border-red-300 focus:border-red-500" : "border-gray-200"
+              }`}
               disabled={loading}
             />
           </div>
-
-          {loading && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-900 border-t-transparent mx-auto mb-4" />
-                <div className="text-gray-700 font-medium">
-                  Loading project details…
-                </div>
-              </div>
-            </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium mb-1">Deadline</label>
+            <input
+              type="date"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              className={`w-full p-3 border-2 rounded-lg ${
+                dateError ? "border-red-300 focus:border-red-500" : "border-gray-200"
+              }`}
+              disabled={loading}
+            />
+          </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-between items-center">
-          <button
-            onClick={() => navigate(-1)}
-            disabled={isSubmitting} // disable cancel if submitting
-            className={`px-6 py-3 rounded-lg ${
-              isSubmitting
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            Cancel
-          </button>
+        {/* Date Error Message */}
+        {dateError && (
+          <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600 text-sm font-medium">{dateError}</p>
+          </div>
+        )}
 
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting} // disable submit if submitting
-            className={`px-8 py-3 rounded-lg flex items-center justify-center ${
-              isSubmitting
-                ? "bg-blue-400 text-white cursor-not-allowed"
-                : "bg-blue-900 text-white hover:bg-blue-800"
-            }`}
-          >
-            {isSubmitting ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                {isEditMode ? "Updating..." : "Creating..."}
-              </>
-            ) : isEditMode ? (
-              "Update Project"
-            ) : (
-              "Create Project"
-            )}
-          </button>
-        </div>
+        <textarea
+          placeholder="Project Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full p-3 border-2 border-gray-200 rounded-lg mt-4 resize-none"
+          rows="3"
+          disabled={loading}
+        />
       </div>
+
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-900 border-t-transparent mx-auto mb-4" />
+            <div className="text-gray-700 font-medium">Loading project details…</div>
+          </div>
+        </div>
+      )}
     </div>
+
+    {/* Action Buttons */}
+    <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
+      <button
+        onClick={() => navigate(-1)}
+        disabled={isSubmitting}
+        className={`w-full sm:w-auto px-6 py-3 rounded-lg ${
+          isSubmitting
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+        }`}
+      >
+        Cancel
+      </button>
+
+      <button
+        onClick={handleSubmit}
+        disabled={isSubmitting}
+        className={`w-full sm:w-auto px-8 py-3 rounded-lg flex items-center justify-center ${
+          isSubmitting
+            ? "bg-blue-400 text-white cursor-not-allowed"
+            : "bg-blue-900 text-white hover:bg-blue-800"
+        }`}
+      >
+        {isSubmitting ? (
+          <>
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            {isEditMode ? "Updating..." : "Creating..."}
+          </>
+        ) : isEditMode ? (
+          "Update Project"
+        ) : (
+          "Create Project"
+        )}
+      </button>
+    </div>
+  </div>
+</div>
+
   );
 };
 
