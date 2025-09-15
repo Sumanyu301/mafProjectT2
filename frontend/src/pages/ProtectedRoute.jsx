@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children }) => {
   }, []);
 
   if (isAuthenticated === null) return <div>Loading...</div>;
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/" replace />;
   return children;
 };
 

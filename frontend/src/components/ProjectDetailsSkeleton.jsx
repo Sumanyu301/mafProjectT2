@@ -30,11 +30,6 @@ function ProjectDetailsSkeleton({ tasksOnly = false }) {
   return (
     <div className="min-h-screen bg-gray-50 animate-pulse">
       <div className="px-16 py-8 max-w-full mx-auto">
-        {/* Back Button */}
-        <div className="flex items-center text-blue-900 mb-6">
-          <div className="h-6 w-6 bg-gray-300 rounded mr-3"></div>
-          <div className="h-6 w-48 bg-gray-300 rounded"></div>
-        </div>
 
         {/* Project Card */}
         <div className="bg-white rounded-lg shadow-lg p-8 border border-gray-200 mb-10">

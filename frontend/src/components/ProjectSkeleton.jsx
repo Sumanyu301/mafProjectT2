@@ -1,4 +1,3 @@
-// components/ProjectSkeleton.jsx
 function ProjectSkeleton() {
   return (
     <div className="cursor-pointer bg-white border-2 border-gray-200 rounded-lg shadow-sm p-6 animate-pulse">

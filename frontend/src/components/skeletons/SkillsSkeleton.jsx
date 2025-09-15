@@ -1,5 +1,3 @@
-import React from "react";
-
 const SkillsSkeleton = ({ count = 1 }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">

@@ -44,11 +44,39 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            <Route path="/dashboard" element={<ProjectsPage />} />
-            <Route path="/projects/:id" element={<ProjectDetailsPage />} />
+            <Route 
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <ProjectsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/projects/:id"
+              element={
+                <ProtectedRoute>
+                  <ProjectDetailsPage />
+                </ProtectedRoute>
+              }
+            />
 
-            <Route path="/profile" element={<EmployeeProfile />} />
-            <Route path="/profile/:id" element={<EmployeeProfile />} />
+            <Route 
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <EmployeeProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/profile/:id"
+              element={
+                <ProtectedRoute>
+                  <EmployeeProfile />
+                </ProtectedRoute>
+              } 
+            />
           </Route>
           
         </Routes>

@@ -1,6 +1,3 @@
-// components/LoadingOverlay.jsx
-import React from "react";
-
 const LoadingOverlay = ({ message = "Loading...", subMessage }) => {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm">

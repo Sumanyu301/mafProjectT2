@@ -37,7 +37,7 @@ function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-blue-900 text-white shadow-md">
-      <div className="max-w-7xl mx-auto flex items-center p-4 justify-between">
+      <div className="max-w-7xl mx-auto flex items-center p-4 justify-between cursor-pointer">
         {/* Logo and Title */}
         <div
           onClick={() => navigate("/dashboard")}

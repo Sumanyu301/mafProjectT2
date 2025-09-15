@@ -115,6 +115,17 @@ function AuthForm({ title, onSubmit, buttonText, isLoading }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Trim all form fields except password
+    const trimmedForm = {};
+    for (const key in form) {
+      if (key === "password") {
+        trimmedForm[key] = form[key]; // leave password as-is
+      } else {
+        trimmedForm[key] = form[key].trim();
+      }
+    }
+    setForm(trimmedForm);
+
     if (!validateForm()) return;
 
     setSuccessMessage("");
@@ -122,12 +133,12 @@ function AuthForm({ title, onSubmit, buttonText, isLoading }) {
     try {
       if (title === "Login") {
         const loginData = {
-          identifier: form.identifier,
-          password: form.password,
+          identifier: trimmedForm.identifier,
+          password: trimmedForm.password,  // use trimmedForm.password directly
         };
         await onSubmit(loginData);
       } else {
-        await onSubmit(form);
+        await onSubmit(trimmedForm);
         setSuccessMessage(
           "Account created successfully! Redirecting to login..."
         );

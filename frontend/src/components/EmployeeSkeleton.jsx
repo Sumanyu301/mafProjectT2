@@ -1,4 +1,3 @@
-// components/EmployeeSkeleton.jsx
 function EmployeeSkeleton() {
   const statsArray = [1, 2, 3];
   const skillsArray = Array.from({ length: 6 });
