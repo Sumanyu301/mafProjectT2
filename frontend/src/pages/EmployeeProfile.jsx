@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { employeeAPI } from "../services/employeeAPI";
+import toast from "react-hot-toast";
+import {
+  SuccessToast,
+  ErrorToast,
+  ConfirmToast,
+} from "../components/CustomToasts";
 
 // import EmployeeSkeleton from "../components/EmployeeSkeleton";
 import { authAPI } from "../services/authAPI";
@@ -227,7 +233,13 @@ export default function EmployeeProfile() {
       // Refresh data
       await fetchData();
       setIsEditing(false);
-      setSuccessMessage("🎉 Profile updated successfully!");
+      toast.custom(
+        <SuccessToast
+          title="Profile Updated!"
+          message="Your profile has been updated successfuthe really."
+        />,
+        { position: "top-center", duration: 3500 }
+      );
       setErrorMessage("");
 
       // Clear success message after 3 seconds
@@ -235,8 +247,10 @@ export default function EmployeeProfile() {
         setSuccessMessage("");
       }, 3000);
     } catch (err) {
-      setErrorMessage(
-        err.response?.data?.message || "❌ Failed to update profile"
+      console.log("Error updating profile:", err);
+      toast.custom(
+        <ErrorToast title="Save Failed!" message="Failed to update profile." />,
+        { position: "top-center", duration: 3500 }
       );
       setSuccessMessage("");
 
@@ -322,10 +336,10 @@ export default function EmployeeProfile() {
 
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex justify-between items-start">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
             <div className="flex items-center space-x-4">
               {/* Avatar with initials */}
-              <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl md:text-3xl font-bold shrink-0">
                 {employee?.name
                   ? employee.name
                       .split(" ")
@@ -335,41 +349,70 @@ export default function EmployeeProfile() {
                       .toUpperCase()
                   : "U"}
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+              <div className="flex flex-col min-w-0 flex-1">
+                <h1
+                  className="text-3xl font-bold text-gray-900 truncate w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl"
+                  title={employee?.name}
+                >
                   {employee?.name || "Loading..."}
                 </h1>
-                <p className="text-lg text-gray-600 mt-2">
+                <p
+                  className="text-lg text-gray-600 mt-2 truncate w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl"
+                  title={employee?.user?.email}
+                >
                   {employee?.user?.email || ""}
                 </p>
               </div>
             </div>
+            {/* Desktop buttons (right side) */}
             {isCurrentUser && (
-              <div className="flex gap-2">
+              <div className="hidden sm:flex flex-wrap gap-2 w-full justify-end">
                 {isEditing ? (
-                  <>
+                  <div className="flex flex-row gap-2 w-full sm:w-auto">
                     <button
                       onClick={handleSaveChanges}
                       disabled={isSaving}
-                      className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="relative bg-green-600 text-white font-medium text-sm px-4 py-2 rounded-md shadow hover:bg-green-700 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full sm:w-auto"
                     >
                       {isSaving && (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span className="absolute left-3 flex items-center">
+                          <svg
+                            className="w-4 h-4 animate-spin text-white"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              fill="none"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            />
+                          </svg>
+                        </span>
                       )}
-                      {isSaving ? "Saving..." : "Save Changes"}
+                      <span className="mx-auto">
+                        {isSaving ? "Saving..." : "Save Changes"}
+                      </span>
                     </button>
                     <button
                       onClick={handleEditToggle}
                       disabled={isSaving}
-                      className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                     >
                       Cancel
                     </button>
-                  </>
+                  </div>
                 ) : (
                   <button
                     onClick={handleEditToggle}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto"
                   >
                     Edit Profile
                   </button>
@@ -377,6 +420,61 @@ export default function EmployeeProfile() {
               </div>
             )}
           </div>
+          {/* Mobile buttons (below avatar/email) */}
+          {isCurrentUser && (
+            <div className="mt-4 flex flex-col gap-2 sm:hidden">
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={handleSaveChanges}
+                    disabled={isSaving}
+                    className="relative bg-green-600 text-white font-medium text-sm px-4 py-2 rounded-md shadow hover:bg-green-700 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full"
+                  >
+                    {isSaving && (
+                      <span className="absolute left-3 flex items-center">
+                        <svg
+                          className="w-4 h-4 animate-spin text-white"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                          />
+                        </svg>
+                      </span>
+                    )}
+                    <span className="mx-auto">
+                      {isSaving ? "Saving..." : "Save Changes"}
+                    </span>
+                  </button>
+                  <button
+                    onClick={handleEditToggle}
+                    disabled={isSaving}
+                    className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed w-full"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={handleEditToggle}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+                >
+                  Edit Profile
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -430,25 +528,37 @@ export default function EmployeeProfile() {
               <div className="space-y-3">
                 <div>
                   <span className="font-medium text-gray-700">Name:</span>
-                  <span className="ml-2 text-gray-900">
+                  <span
+                    className="ml-2 text-gray-900 truncate max-w-[280px] inline-block align-bottom"
+                    title={employee?.name}
+                  >
                     {employee?.name || "N/A"}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Email:</span>
-                  <span className="ml-2 text-gray-900">
+                  <span
+                    className="ml-2 text-gray-900 truncate max-w-[280px] inline-block align-bottom"
+                    title={employee?.user?.email}
+                  >
                     {employee?.user?.email || "N/A"}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Contact:</span>
-                  <span className="ml-2 text-gray-900">
+                  <span
+                    className="ml-2 text-gray-900 truncate max-w-[280px] inline-block align-bottom"
+                    title={employee?.contact}
+                  >
                     {employee?.contact || "Not provided"}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Max Tasks:</span>
-                  <span className="ml-2 text-gray-900">
+                  <span
+                    className="ml-2 text-gray-900 truncate max-w-[280px] inline-block align-bottom"
+                    title={employee?.maxTasks}
+                  >
                     {employee?.maxTasks || 0}
                   </span>
                 </div>
@@ -456,7 +566,10 @@ export default function EmployeeProfile() {
                   <span className="font-medium text-gray-700">
                     Current Workload:
                   </span>
-                  <span className="ml-2 text-gray-900">
+                  <span
+                    className="ml-2 text-gray-900 truncate max-w-[280px] inline-block align-bottom"
+                    title={employee?.currentWorkload}
+                  >
                     {employee?.currentWorkload || 0}
                   </span>
                 </div>

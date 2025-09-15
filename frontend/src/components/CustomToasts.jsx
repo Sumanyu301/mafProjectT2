@@ -16,7 +16,7 @@ export const SuccessToast = ({ title, message }) => (
       </svg>
     </div>
     <p className="font-semibold text-lg">{title || "Success!"}</p>
-    <p className="text-sm text-gray-600">{message}</p>
+    <p className="text-sm text-gray-600 text-center">{message}</p>
   </div>
 );
 
@@ -35,7 +35,7 @@ export const ErrorToast = ({ title, message }) => (
       </svg>
     </div>
     <p className="font-semibold text-lg">{title || "Error"}</p>
-    <p className="text-sm text-gray-600">{message}</p>
+    <p className="text-sm text-gray-600 text-center">{message}</p>
   </div>
 );
 
@@ -54,7 +54,7 @@ export const ConfirmToast = ({ title, message, onConfirm, onCancel }) => (
       </svg>
     </div>
     <p className="font-semibold text-lg">{title || "Are you sure?"}</p>
-    <p className="text-sm text-gray-600 mb-3">{message}</p>
+    <p className="text-sm text-gray-600 mb-3 text-center">{message}</p>
     <div className="flex gap-3">
       <button
         onClick={onCancel}
