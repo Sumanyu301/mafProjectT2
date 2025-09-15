@@ -183,11 +183,11 @@ function ProjectDetailsPage() {
   };
 
   const getProgressColor = (progress) => {
-    if (progress === 0) return "bg-white border border-gray-300"; // White bar with border
+    if (progress === 0) return "bg-white border border-gray-300"; // empty bar
     if (progress >= 80) return "bg-green-500";
     if (progress >= 50) return "bg-blue-600";
     if (progress >= 25) return "bg-yellow-500";
-    return "bg-white border border-gray-300";
+    return "bg-red-500"; // 1–24%
   };
 
   // open modal to add task (blank template)
@@ -497,13 +497,13 @@ function ProjectDetailsPage() {
             {project.description}
           </p>
           <div className="flex flex-wrap gap-3 my-6">
-            <span
+            {/* <span
               className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
                 project.status
               )}`}
             >
               {project.status}
-            </span>
+            </span> */}
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(
                 project.priority
