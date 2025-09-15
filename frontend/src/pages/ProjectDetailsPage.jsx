@@ -140,11 +140,11 @@ function ProjectDetailsPage() {
   }, [showTaskModal, isProjectManager]);
 
   const statusColumns = [
+    { id: "BLOCKED", label: "Blocked" },
     { id: "TODO", label: "To Do" },
     { id: "IN_PROGRESS", label: "In Progress" },
     { id: "IN_REVIEW", label: "In Review" },
-    { id: "COMPLETED", label: "Completed" },
-    { id: "BLOCKED", label: "Blocked" },
+    { id: "COMPLETED", label: "Completed" }
   ];
 
   const tasksByStatus = {};

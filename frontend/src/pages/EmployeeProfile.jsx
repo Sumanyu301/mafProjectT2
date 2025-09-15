@@ -263,6 +263,15 @@ export default function EmployeeProfile() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+      navigate("/");
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
+
   if (loading) {
     return <ProfileSkeleton />;
   }
@@ -376,25 +385,7 @@ export default function EmployeeProfile() {
                     >
                       {isSaving && (
                         <span className="absolute left-3 flex items-center">
-                          <svg
-                            className="w-4 h-4 animate-spin text-white"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                              fill="none"
-                            />
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                            />
-                          </svg>
+                          {/* spinner */}
                         </span>
                       )}
                       <span className="mx-auto">
@@ -408,14 +399,30 @@ export default function EmployeeProfile() {
                     >
                       Cancel
                     </button>
+                    {/* Logout on desktop */}
+                    <button
+                      onClick={handleLogout}
+                      className="bg-red-600 px-4 py-2 rounded hover:bg-red-500 transition-colors text-white w-full sm:w-auto"
+                    >
+                      Logout
+                    </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={handleEditToggle}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto"
-                  >
-                    Edit Profile
-                  </button>
+                  <>
+                    <button
+                      onClick={handleEditToggle}
+                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto"
+                    >
+                      Edit Profile
+                    </button>
+                    {/* Logout on desktop */}
+                    <button
+                      onClick={handleLogout}
+                      className="bg-red-600 px-4 py-2 rounded hover:bg-red-500 transition-colors text-white w-full sm:w-auto"
+                    >
+                      Logout
+                    </button>
+                  </>
                 )}
               </div>
             )}
@@ -428,29 +435,11 @@ export default function EmployeeProfile() {
                   <button
                     onClick={handleSaveChanges}
                     disabled={isSaving}
-                    className="relative bg-green-600 text-white font-medium text-sm px-4 py-2 rounded-md shadow hover:bg-green-700 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full"
+                    className="relative bg-green-600 text-white font-medium px-4 py-2 rounded-md shadow hover:bg-green-700 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full"
                   >
                     {isSaving && (
                       <span className="absolute left-3 flex items-center">
-                        <svg
-                          className="w-4 h-4 animate-spin text-white"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                          />
-                        </svg>
+                        {/* spinner */}
                       </span>
                     )}
                     <span className="mx-auto">
@@ -464,14 +453,30 @@ export default function EmployeeProfile() {
                   >
                     Cancel
                   </button>
+                  {/* Logout on mobile */}
+                  <button
+                    onClick={handleLogout}
+                    className="bg-red-600 px-4 py-2 rounded hover:bg-red-500 transition-colors text-white w-full"
+                  >
+                    Logout
+                  </button>
                 </>
               ) : (
-                <button
-                  onClick={handleEditToggle}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
-                >
-                  Edit Profile
-                </button>
+                <>
+                  <button
+                    onClick={handleEditToggle}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
+                  >
+                    Edit Profile
+                  </button>
+                  {/* Logout on mobile */}
+                  <button
+                    onClick={handleLogout}
+                    className="bg-red-600 px-4 py-2 rounded hover:bg-red-500 transition-colors text-white w-full"
+                  >
+                    Logout
+                  </button>
+                </>
               )}
             </div>
           )}

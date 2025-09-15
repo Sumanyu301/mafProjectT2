@@ -22,73 +22,54 @@ function Signup() {
   const [error, setError] = useState(null);
 
 
-const handleSignup = async (data) => {
-  setIsLoading(true);
-  setError(null);
-  try {
-    const res = await authAPI.signup({
-      username: data.username,
-      email: data.email,
-      password: data.password,
-    });
+  const handleSignup = async (data) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await authAPI.signup({
+        username: data.username,
+        email: data.email,
+        password: data.password,
+      });
 
-    console.log("Signup success:", res);
+      console.log("Signup success:", res);
 
-    setTimeout(() => navigate("/"), 1500);
-  } catch (err) {
-    setError(err.response?.data?.message || err.message || "Signup failed");
-  } finally {
-    setIsLoading(false);
-  }
-};
+      setTimeout(() => navigate("/"), 1500);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Signup failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 relative overflow-hidden">
+    <div className="min-h-screen bg-white relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-20 w-32 h-32 bg-blue-50 rounded-full opacity-60"></div>
         <div className="absolute bottom-20 right-20 w-24 h-24 bg-red-50 rounded-full opacity-60"></div>
-        <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-blue-100 rounded-full opacity-40"></div>
+        <div className="absolute top-1/2 right-1/3 w-16 h-16 bg-blue-100 rounded-full opacity-40"></div>
       </div>
 
-      <div className="relative z-10 p-10 bg-gray-50 flex flex-col lg:flex-row min-h-screen">
-        {/* Left side - Features */}
-        <div className="lg:w-1/2 flex flex-col justify-center p-12 lg:p-16 bg-gray-50">
+      <div className="relative z-10 flex flex-col lg:flex-row min-h-screen">
+        {/* Left side - Features (hidden on mobile, visible on desktop) */}
+        <div className="hidden lg:flex lg:w-1/2 flex-col justify-center p-12 lg:p-16 bg-gray-50">
           <div className="max-w-lg mx-auto lg:mx-0 text-4xl lg:text-6xl">
             <h1 className="text-4xl lg:text-6xl font-bold text-blue-900 mb-6 leading-tight">
               MAF
               <span className="text-red-600"> Project Allocation</span>
             </h1>
-
             <p className="text-xl text-gray-700 mb-8 leading-relaxed">
               Sign up today to streamline team management, optimize workloads,
               and ensure the right people work on the right projects.
             </p>
-
-            {/* Feature list */}
             <div className="space-y-4 mb-8">
               {[
-                {
-                  icon: UserCheck,
-                  text: "Skill-based Employee Allocation",
-                },
-                // {
-                //   icon: BarChart,
-                //   text: "Track Workload & Availability",
-                // },
-                {
-                  icon: ClipboardList,
-                  text: "Simplified Project Assignments",
-                },
-                {
-                  icon: Clock,
-                  text: "Real-time Monitoring & Updates",
-                },
+                { icon: UserCheck, text: "Skill-based Employee Allocation" },
+                { icon: ClipboardList, text: "Simplified Project Assignments" },
+                { icon: Clock, text: "Real-time Monitoring & Updates" },
               ].map((feature, index) => (
-                <div
-                  key={index}
-                  className="flex items-center space-x-3 text-gray-700"
-                >
+                <div key={index} className="flex items-center space-x-3 text-gray-700">
                   <div className="bg-blue-900 p-2 rounded-lg">
                     <feature.icon className="h-5 w-5 text-white" />
                   </div>
@@ -98,30 +79,24 @@ const handleSignup = async (data) => {
             </div>
           </div>
         </div>
-
-
-        {/* Right side - Auth form */}
-        <div className="lg:w-1/2 flex flex-col items-center justify-center p-4 lg:p-8 bg-gray-50">
-          <AuthForm
-            title="Signup"
-            onSubmit={handleSignup}
-            buttonText="Create Account"
-            isLoading={isLoading}
-            error={error}
-          />
-
-          {/* Bottom section */}
-          <div className="mt-8 text-center">
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 max-w-md shadow-sm">
+        {/* Right side - Auth form (full width on mobile, card-like, centered) */}
+        <div className="flex flex-col items-center justify-center w-full lg:w-1/2 min-h-screen p-4 bg-white">
+            <AuthForm
+              title="Signup"
+              onSubmit={handleSignup}
+              buttonText={isLoading ? "Creating Account..." : "Create Account"}
+              isLoading={isLoading}
+              error={error}
+            />
+          <div className="mt-8 text-center w-full max-w-md mx-auto">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-center mb-3">
                 <CheckCircle className="h-5 w-5 text-red-600 mr-2" />
                 <span className="text-blue-900 font-semibold">Already have an account?</span>
               </div>
-
               <p className="text-gray-700 text-sm mb-4">
                 Welcome back! Sign in to continue your journey with us.
               </p>
-
               <Link
                 to="/"
                 className="inline-flex items-center justify-center w-full bg-blue-900 hover:bg-blue-800 text-white py-3 px-6 rounded-lg font-medium transition-all duration-200 transform hover:scale-[1.02] shadow-sm hover:shadow-md group"
@@ -135,6 +110,7 @@ const handleSignup = async (data) => {
       </div>
     </div>
   );
+
 }
 
 export default Signup;
