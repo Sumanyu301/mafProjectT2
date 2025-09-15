@@ -169,27 +169,33 @@ function ProjectsPage() {
       <div className="p-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex-1">
               <div className="flex items-center mb-4">
                 <FolderOpen className="h-8 w-8 text-red-600 mr-3" />
-                <h1 className="text-3xl font-bold text-blue-900">
+                <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">
                   Ongoing Projects
                 </h1>
               </div>
-              <p className="text-gray-700 text-lg">
+              <p className="text-gray-700 text-base sm:text-lg">
                 Track and manage your active projects with real-time updates and
                 progress monitoring.
               </p>
             </div>
-            <button
-              onClick={() => navigate("/create-project")}
-              className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 shadow-lg hover:shadow-xl"
-            >
-              <Plus className="h-5 w-5" />
-              Create New Project
-            </button>
+            <div className="flex-shrink-0 w-full sm:w-auto">
+              <button
+                onClick={() => navigate("/create-project")}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 shadow-lg hover:shadow-xl"
+              >
+                <Plus className="h-5 w-5" />
+                <span className="hidden xs:inline">Create New Project</span>
+                <span className="inline xs:hidden">New Project</span>
+              </button>
+            </div>
           </div>
+
+          {/* Responsive Divider */}
+          <div className="w-full border-t border-gray-200 mb-6 sm:mb-8"></div>
 
           {/* Search Bar */}
           <div className="relative">

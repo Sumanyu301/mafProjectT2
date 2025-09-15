@@ -3,16 +3,18 @@
 ## 🚀 Quick Deploy Options
 
 ### **Option 1: Vercel (Recommended)**
+
 1. **Connect GitHub**: Go to [vercel.com](https://vercel.com) → Import Project
 2. **Select Repository**: `mafProjectT2`
 3. **Root Directory**: Set to `frontend`
-4. **Environment Variables**: 
+4. **Environment Variables**:
    ```
    VITE_API_URL=https://mafprojectt2.onrender.com
    ```
 5. **Deploy**: Vercel auto-detects Vite and deploys!
 
 ### **Option 2: Netlify**
+
 1. **Connect GitHub**: Go to [netlify.com](https://netlify.com) → New Site
 2. **Build Settings**:
    - **Base directory**: `frontend`
@@ -24,6 +26,7 @@
    ```
 
 ### **Option 3: Render Static Site**
+
 1. **Connect GitHub**: Create new Static Site
 2. **Settings**:
    - **Root directory**: `frontend`

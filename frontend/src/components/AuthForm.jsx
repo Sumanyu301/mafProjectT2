@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Eye, EyeOff, User, Mail, Lock, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  User,
+  Mail,
+  Lock,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 
 // ✅ InputField now receives everything from props
 const InputField = ({
@@ -18,7 +27,9 @@ const InputField = ({
     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
       <Icon
         className={`h-5 w-5 transition-colors ${
-          error ? "text-red-500" : "text-gray-500 group-focus-within:text-blue-900"
+          error
+            ? "text-red-500"
+            : "text-gray-500 group-focus-within:text-blue-900"
         }`}
       />
     </div>
@@ -58,7 +69,12 @@ const InputField = ({
 );
 
 function AuthForm({ title, onSubmit, buttonText, isLoading }) {
-  const [form, setForm] = useState({ username: "", email: "", identifier: "", password: "" });
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    identifier: "",
+    password: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
@@ -77,16 +93,20 @@ function AuthForm({ title, onSubmit, buttonText, isLoading }) {
 
     if (title === "Signup") {
       if (!form.username.trim()) newErrors.username = "Username is required";
-      else if (form.username.length < 3) newErrors.username = "Username must be at least 3 characters";
+      else if (form.username.length < 3)
+        newErrors.username = "Username must be at least 3 characters";
 
       if (!form.email.trim()) newErrors.email = "Email is required";
-      else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Please enter a valid email";
+      else if (!/\S+@\S+\.\S+/.test(form.email))
+        newErrors.email = "Please enter a valid email";
     } else {
-      if (!form.identifier.trim()) newErrors.identifier = "Email or Username is required";
+      if (!form.identifier.trim())
+        newErrors.identifier = "Email or Username is required";
     }
 
     if (!form.password) newErrors.password = "Password is required";
-    else if (form.password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    else if (form.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -108,10 +128,14 @@ function AuthForm({ title, onSubmit, buttonText, isLoading }) {
         await onSubmit(loginData);
       } else {
         await onSubmit(form);
-        setSuccessMessage("Account created successfully! Redirecting to login...");
+        setSuccessMessage(
+          "Account created successfully! Redirecting to login..."
+        );
       }
     } catch (err) {
-      setErrors({ submit: err.message || "An error occurred. Please try again." });
+      setErrors({
+        submit: err.message || "An error occurred. Please try again.",
+      });
     }
   };
 
@@ -120,7 +144,10 @@ function AuthForm({ title, onSubmit, buttonText, isLoading }) {
       <div className="bg-gray-50 border border-gray-200 rounded-2xl shadow-lg p-8 transform hover:scale-[1.01] transition-all duration-300">
         <div className="text-center mb-8">
           <div className="flex justify-center">
-            <img src="/maf_logo-removebg-preview.png" className="h-20 w-30 text-white" />
+            <img
+              src="/maf_logo-removebg-preview.png"
+              className="h-20 w-30 text-white"
+            />
           </div>
           <h2 className="text-3xl font-bold text-blue-900 mb-2">{title}</h2>
           <p className="text-gray-600">
@@ -186,12 +213,11 @@ function AuthForm({ title, onSubmit, buttonText, isLoading }) {
           />
 
           {errors.submit && (
-  <div className="mt-1 flex items-center px-2 py-1 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
-    <AlertCircle className="h-4 w-4 mr-1 flex-shrink-0" />
-    {errors.submit}
-  </div>
-)}
-
+            <div className="mt-1 flex items-center px-2 py-1 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+              <AlertCircle className="h-4 w-4 mr-1 flex-shrink-0" />
+              {errors.submit}
+            </div>
+          )}
 
           {successMessage && (
             <div className="flex items-center justify-center p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
